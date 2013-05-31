@@ -1,0 +1,34 @@
+var samps% := 32;
+var wcnt%; 'Count waveforms
+var wvmrkch% := 3; 'wavemark channel identifier
+main();
+halt;
+
+proc main()
+wcnt% := countwaves(wvmrkch%);
+
+var data[wcnt%][samps%], times[wcnt%];
+getwaves(wvmrkch%,data[][],wcnt%);
+Interact("Do something",1);
+end
+
+func countwaves(ch%)
+var t:= -1, n:=1;
+repeat
+    t := NextTime(ch%, t);
+    n+=1;
+until t = -1;
+return n;
+end
+
+proc getwaves(ch%,out[][],wcnt%)
+var t:= -1, n%,code%[4], temp[samps%];
+for n% := 0 to (wcnt%-1) do
+    t:= NextTime(ch%, t, code%, temp[]); 'save current spike to temp[]
+    var m%;
+    for m% := 0 to (samps%-1) do 'Save current spike (temp[]) to out[][]
+        out[n%][m%] := temp[m%];
+    next;
+next;
+end
+

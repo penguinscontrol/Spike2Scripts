@@ -1,0 +1,50 @@
+var samps% := 32; 'how many samples per waveform?
+var wcnt%; 'Count waveforms
+var wvmrkch% := 3; 'wavemark channel identifier
+
+func countwaves(ch%) 'counts the waves in a wavemark
+var t:= -1, n:=1;
+if ChanKind(ch%) = 6 then 'if ch% is a wavemark
+repeat
+    t := NextTime(ch%, t);
+    n+=1;
+until t = -1;
+else
+    n := -1;
+    PrintLog("Unsuitable Channel!");
+    halt;
+endif;    
+return n;
+end
+
+proc getwaves(ch%,out[][]) 'saves the spike waveforms to out[][]
+if ChanKind(ch%) = 6 then 'if ch% is a wavemark
+var t:= -1, n%, m%, code%[4], temp[samps%];
+for n% := 0 to (wcnt%-1) do
+    t:= NextTime(ch%, t, code%, temp[]); 'save current spike to temp[]
+    for m% := 0 to (samps%-1) do 'Save current spike (temp[]) to out[][]
+        out[n%][m%] := temp[m%];
+    next;
+    next;
+else
+    PrintLog("Unsuitable Channel!");
+    halt;
+endif;
+
+end
+
+proc extractFeat(out[],in[][],opt%)
+var n%, m%, temp[samps%];
+    for n% := 0 to (wcnt%-1) do
+        for m% := 0 to (samps%-1) do
+        temp[m%] := in[n%][m%];
+        next;
+        docase
+            case opt% = 1 then 'Extract Max
+                out[n%] := temp[Max(temp[])];
+            case opt% = 2 then 'Extract Min
+                out[n%] := temp[Min(temp[])];
+        endcase;    
+    next;
+end
+

@@ -1,0 +1,33 @@
+#include "noise_estimate_fcn.s2s"
+#include "spike_manipulation_fnc.s2s"
+
+var mainfile%, sig, thres,ampstd;
+
+main();
+halt();
+
+proc main();
+var ok%,wavesch%,vtrch%;
+'Set the variables above for initial values
+DlgCreate("SNR Estimator");  'Start new dialog
+DlgChan(1,"Please Indicate Voltage Trace Channel",262656);
+DlgChan(2,"Please Indicate Wavemark Channel",262160);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(vtrch%,wavesch%);    'ok% is 0 if user cancels,  variables updated if not
+
+mainfile% := ViewLink();
+'Filter the raw signal 
+var filtered% := View(mainfile%).unusedchan();  'Find next available channel and...
+View(mainfile%).filterraw(vtrch%,filtered%);          '... save a filtered version of channel 1 to it.
+
+thres := getnoise(filtered%);
+
+wcnt% := View(mainfile%).countwaves(wavesch%); 'count spikes;
+var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
+View(mainfile%).getwaves(wvmrkch%,data[][]); 'save waveforms to variable data
+var amps[wcnt%]; 'save amplitudes to variable amps
+View(mainfile%).extractFeat(amps[],data[][],1);
+ArrSum(amps[],sig,ampstd);
+Message("SNR is ", sig/thres);
+end

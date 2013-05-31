@@ -1,0 +1,52 @@
+func getnoise(ch%)
+var noise;
+var max% := XtoBin(MaxTime());
+var data[max%], n%;
+n% := ChanData(ch%, data[], 0, MaxTime());
+Abs(data[]);
+noise := median(data[])/0.6745;
+return noise;
+end
+
+proc filterraw(src%,dest%)
+IIRCreate(-1, 2, 0, 4, 300, 6000); 'IIR Band pass Butterworth 0.3 to + kHz, fourth order
+ChanShow(IIRApply(-1, dest%, src%, 0.000000, MaxTime(), 1)); 'Apply created filter to a new channel
+end
+
+func openwavem(ch%,thres,stdmin,stdmax)
+'' Open a new wavemark
+var newmark% := SSOpen(2,1);
+SSChan(ch%); Draw();
+
+'' Set wavemark parameters
+SSTempSizeSet(8,32,48,16); 'First number: how many samples right of the first one; Second number: how many samples in template? Third: How many samples in window; Fourth: How far into the window is 0
+SSParam(16, 32.00, 50, 20.00, 90.00, 2, 1, 128, 2, 31); 
+Optimise(); Draw();
+
+SSButton(9, 1); 'Enable exclusion cursors
+HCursor(1, -stdmin*thres); 'Set Wavemark low trigger level
+HCursor(2, stdmin*thres); 'Set Wavemark high trigger level
+HCursor(3, -stdmax*thres); 'Set Wavemark low exclusion trigger level
+HCursor(4, stdmax*thres); 'Set Wavemark high exclusion trigger level
+return newmark%;
+end
+
+func unusedchan()
+var ch1%, ch%[2];
+if View(ViewLink()).ChanList(ch%, 128) > 0 then 'If unused channels
+    ch1% := ch%[1];                 'use first
+endif;
+return ch1%;
+end
+
+func median(vec[])
+var med, size, half;
+ArrSort(vec[]);
+size := Len(vec[]);
+half := Floor(size/2);
+med := vec[half];
+if 2*half = size then
+    med := (med+vec[half-1])/2;    
+endif;
+return med;
+end

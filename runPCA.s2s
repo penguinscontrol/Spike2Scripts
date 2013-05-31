@@ -1,0 +1,109 @@
+var samps% := 32;
+var WFxInc,WFyInc,WFbinSz,WFSlices%,WFvh%;
+main();
+halt;
+
+proc main()
+var wvmrkch% := 3; 'wavemark channel identifier
+
+var wcnt%; 'Count waveforms
+wcnt% := countwaves(wvmrkch%);
+
+var data%[wcnt%][samps%], times[wcnt%];
+getwaves(wvmrkch%,data%[][],wcnt%);
+
+drawspikes(data%[][],wcnt%);
+
+waterf(data%[][],wcnt%)
+end
+
+func countwaves(ch%)
+var t:= -1, n:=1;
+repeat
+    t := NextTime(ch%, t);
+    n+=1;
+until t = -1;
+return n;
+end
+
+proc getwaves(ch%,out%[][],wcnt%)
+var t:= -1, n%,code%[4], temp%[samps%];
+for n% := 0 to (wcnt%-1) do
+    t:= NextTime(ch%, t, code%, temp%[]);
+    var m%;
+    for m% := 0 to (samps%-1) do
+        out%[n%][m%] := temp%[m%];
+    next;
+next;
+end
+
+proc drawspikes(data%[][],wcnt%)
+var wave[samps%];
+var n%, m%, wh%;
+wh% := MakeWindow%(samps%, 0, 0); 'start waterfall view
+for n% := 0 to (wcnt%-1) do
+    View(wh%);               'Make time view current
+    for m% := 0 to (samps%-1) do
+        wave[m%] := data%[n%][m%];
+    next;
+    AddSlice(wave[],wh%)           'add to picture
+next;
+
+View(wh%).WindowVisible(1);
+end
+'proc drawspikes(data%[][],wcnt%)
+'var support[samps%];
+'var n%;
+'for n% := 0 to (samps%-1) do
+'    support[n%] := n%;
+'next;
+'for n% := 0 to (wcnt%-1) do
+'    XYAddData(ch%,support[],data%[n%][0:(samps%-1)]);
+'next; XYJoin(ch%,1);
+'end
+
+proc waterf(data%[][],wcnt%)
+var wave[samps%];
+var n%, m%, wh%;
+wh% := MakeWindow%(samps%, 2, 250); 'start waterfall view
+for n% := 0 to (wcnt%-1) do
+    View(wh%);               'Make time view current
+    for m% := 0 to (samps%-1) do
+        wave[m%] := data%[n%][m%];
+    next;
+    AddSlice(wave[],wh%)           'add to picture
+next;
+View(wh%).WindowVisible(1);
+end
+
+Func MakeWindow%(xBinSz, xInc, yInc)
+WFSlices% := 0;             'no slices yet
+WFxInc := xInc;             'save x increment per slice
+WFyInc := yInc;             'save y increment per slice
+WFbinSz:= xBinSz;           'save data point separation
+WFvh% := FileNew(12);       'create a new XY window (hidden)
+return WFvh%;               'return the XY window handle
+end;
+
+
+Func AddSlice(y[],vw%)          'Add data to the waterfall
+View(vw%);                'select the waterfall view
+var ch%:=1;                 'true if this is the first channel
+if WFSlices% = 0 then       'if first channel no need to create
+   XYSetChan(1,-Len(y[]),0,1);          'set original channel
+else
+   ch% := XYSetChan(0, -Len(y[]), 0, 1);'create new channel
+   if (ch% <= 0) then return ch% endif; 'No more channels
+endif;
+WFSlices% := ch%;           'number of slices
+XYDrawMode(ch%,2,0);        'Hide the markers (set size of 0)
+ChanColourSet(ch%,1,Rand(),Rand(),Rand());
+'XYJoin(ch%,4);
+var x[Len(y[])];            'space for x values, same size as y[]
+ArrConst(x[], WFbinSz);     'generate x axis values, set the same
+x[0]:=(ch%-1)*WFxInc;       'set x offset as first value
+ArrIntgl(x[]);              'form the x positions
+ArrAdd(y[],(ch%-1)*WFyInc); 'add the y offset to the y array
+XYAddData(ch%, x[], y[]);   'add the (x,y) data points
+return 1;                   'return >0 means all OK
+end;

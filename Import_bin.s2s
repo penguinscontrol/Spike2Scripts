@@ -1,0 +1,75 @@
+main();
+halt;
+
+proc main()
+var mainfile%; 'View created by FileOpen()
+var curfile$, destfile$; 'File being analyzed, file to save to
+
+FilePathSet("E:\\Spike_Sorting\\",0);
+
+'Dialog creation
+DlgCreate("Process new file");
+DlgText("Import from non-native data file?",0,1);
+DlgButton(0,""); 'Hide Cancel Button
+DlgButton(2,"Yes"); 'Make a button to yes
+DlgButton(1,"No");' relabel the OK button to no
+DlgShow();
+
+'Dialog interpret
+if DlgButton() = 2 then
+    var temp%;
+    var fold$;
+    var filenm$;
+    PrintLog("Current View is ", View(),"\n");
+    temp% := FileOpen("*.bin",9,0); 'temporarily open bin file 
+    curfile$ := View(temp%).FileName$(0); 'get name of bin file
+    PrintLog("Current View is ", View(),"\n");
+    View(temp%);FileClose(); 'close view associated with bin file
+    
+    PrintLog(curfile$, "\n");
+    PrintLog("Current View is ", View(), "\n");
+    fold$ := getname$(curfile$,1);
+    PrintLog("You have selected folder ", fold$, "\n");
+    filenm$ := getname$(curfile$, 0);
+    PrintLog("You have selected file ", filenm$, "\n");
+    
+    FilePathSet(fold$,0);
+    destfile$ := ImportFile$(filenm$);
+    mainfile% := FileOpen(destfile$,0,3);      
+else
+    mainfile% := FileOpen("",0,3);               
+endif;
+end
+
+func getname$(file$, choice)
+var n,k; 
+repeat
+    k := InStr(file$,"\\",k+1);
+    if (k >0) then
+        n := k;
+    endif;
+until k = 0;
+if choice = 1 then
+    file$ := DelStr$(file$,n+1,99);
+    return file$;
+else
+    file$ := DelStr$(file$,1,n);
+    return file$;
+endif;
+
+end
+
+Func ImportFile$(file$);
+var ok%;
+var destfile$;
+PrintLog("Importing file %s: ", file$);                 ' Log what we are doing
+destfile$ := FileConvert$(file$, "", 1, ok%);                        ' Try to import the file
+if (ok% < 0) then                                       ' Say how we did
+    PrintLog("import failed, error %d (%s)\n", ok%, error$(ok%));
+else
+    'PrintLog(file$);
+    PrintLog("import successfull\n");
+    'FileClose();                                        ' Close the file
+endif;
+return destfile$;                                             ' and we are done
+end
