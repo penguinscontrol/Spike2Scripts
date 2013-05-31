@@ -21,14 +21,15 @@ mainfile% := FileOpen("",0,3); 'Open a file for processing
 WindowVisible(3);
 
 'Filter the raw signal 
-filtered% := unusedchan();  'Find next available channel and...
-View(mainfile%).filterraw(1,filtered%);          '... save a filtered version of channel 1 to it.
-
-thres := getnoise(filtered%);
+PrintLog(View());
+filtered% := filterraw(1);          '... save a filtered version of channel 1 to it.
+PrintLog(mainfile%, View());
+thres := View(mainfile%).getnoise(filtered%);
 newmark% := View(mainfile%).openwavem(filtered%,thres,stdmin,stdmax); 'Open a new wavemark dialogue
 
 Interact("Press OK to get SNR estimate",4607);
 wcnt% := View(mainfile%).countwaves(wvmrkch%); 'count spikes;
+samps% := View(ViewLink()).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
 View(mainfile%).getwaves(wvmrkch%,data[][]);
 var amps[wcnt%], sig,ampstd;

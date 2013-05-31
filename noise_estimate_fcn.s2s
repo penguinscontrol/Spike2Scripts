@@ -8,9 +8,11 @@ noise := median(data[])/0.6745;
 return noise;
 end
 
-proc filterraw(src%,dest%)
+func filterraw(src%)
 IIRCreate(-1, 2, 0, 4, 300, 6000); 'IIR Band pass Butterworth 0.3 to + kHz, fourth order
-ChanShow(IIRApply(-1, dest%, src%, 0.000000, MaxTime(), 1)); 'Apply created filter to a new channel
+var dest% := IIRApply(-1, 0, src%, 0.000000, MaxTime(), 1); 'Apply created filter to a new channel
+ChanShow(dest%);
+return dest%;
 end
 
 func openwavem(ch%,thres,stdmin,stdmax)
@@ -22,7 +24,7 @@ SSChan(ch%); Draw();
 SSTempSizeSet(8,32,48,16); 'First number: how many samples right of the first one; Second number: how many samples in template? Third: How many samples in window; Fourth: How far into the window is 0
 SSParam(16, 32.00, 50, 20.00, 90.00, 2, 1, 128, 2, 31); 
 Optimise(); Draw();
-
+View(ViewLink()).HCursorDelete(-1); 'Delete all horizontal cursors
 SSButton(9, 1); 'Enable exclusion cursors
 HCursor(1, -stdmin*thres); 'Set Wavemark low trigger level
 HCursor(2, stdmin*thres); 'Set Wavemark high trigger level

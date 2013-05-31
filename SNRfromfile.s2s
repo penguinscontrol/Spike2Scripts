@@ -7,25 +7,22 @@ main();
 halt();
 
 proc main();
+mainfile% := ViewLink();
+View(mainfile%);
 var ok%,wavesch%,vtrch%;
-'Set the variables above for initial values
 DlgCreate("SNR Estimator");  'Start new dialog
-DlgChan(1,"Please Indicate Voltage Trace Channel",262656);
-DlgChan(2,"Please Indicate Wavemark Channel",262160);
+DlgChan(1,"Please indicate Voltage Trace",131584);
+DlgChan(2,"Please indicate WaveMark channel",131088);
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(vtrch%,wavesch%);    'ok% is 0 if user cancels,  variables updated if not
 
-mainfile% := ViewLink();
 'Filter the raw signal 
-var filtered% := View(mainfile%).unusedchan();  'Find next available channel and...
-View(mainfile%).filterraw(vtrch%,filtered%);          '... save a filtered version of channel 1 to it.
+var filtered% := View(mainfile%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
 
 thres := getnoise(filtered%);
 
 wcnt% := View(mainfile%).countwaves(wavesch%); 'count spikes;
-'var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
-'View(mainfile%).getwaves(wvmrkch%,data[][]); 'save waveforms to variable data
 var amps[wcnt%]; 'save amplitudes to variable amps
 View(mainfile%).extractFeatWave(wavesch%,amps[],1);
 ArrSum(amps[],sig,ampstd);

@@ -3,11 +3,12 @@ var wcnt%; 'Count waveforms
 var wvmrkch% := 3; 'wavemark channel identifier
 
 func countwaves(ch%) 'counts the waves in a wavemark
-var t:= -1, n:=1;
+var t:= -1, n:=0;
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark
 repeat
-    t := NextTime(ch%, t);
-    n+=1;
+        t := NextTime(ch%, t);
+        if t <> -1 then n+=1 endif; 
+        PrintLog("Found spike ", n, " at time ",t);
 until t = -1;
 else
     n := -1;
@@ -19,7 +20,6 @@ end
 
 proc getwaves(ch%,out[][]) 'saves the spike waveforms to out[][]
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark
-    samps% := getWavemarkInfo(ch%,1);    
     var t:= -1, n%, m%, code%[4], temp[samps%];
     for n% := 0 to (wcnt%-1) do
         t:= NextTime(ch%, t, code%, temp[]); 'save current spike to temp[]
@@ -57,7 +57,9 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
     docase
     case opt% = 1 then;
         for n% := 0 to (wcnt%-1) do
-            out[n%] := ChanMeasure(ch%,8,t,t+BinToX(wid)-1);
+            out[n%] := ChanMeasure(ch%,8,t,t+BinToX(wid-1));
+            PrintLog("Amplitude of spike ", n%, " is ", out[n%], " at time ", t, "\n");
+            t := NextTime(ch%, t);
         next;     
     endcase;       
 else
