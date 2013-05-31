@@ -1,8 +1,8 @@
 #include "noise_estimate_fcn.s2s"
 #include "spike_manipulation_fnc.s2s"
 
-var mainfile%, sig, thres,ampstd;
-
+var mainfile%, sig, thres, ampstd;
+                                                            
 main();
 halt();
 
@@ -24,10 +24,10 @@ View(mainfile%).filterraw(vtrch%,filtered%);          '... save a filtered versi
 thres := getnoise(filtered%);
 
 wcnt% := View(mainfile%).countwaves(wavesch%); 'count spikes;
-var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
-View(mainfile%).getwaves(wvmrkch%,data[][]); 'save waveforms to variable data
+'var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
+'View(mainfile%).getwaves(wvmrkch%,data[][]); 'save waveforms to variable data
 var amps[wcnt%]; 'save amplitudes to variable amps
-View(mainfile%).extractFeat(amps[],data[][],1);
+View(mainfile%).extractFeatWave(wavesch%,amps[],1);
 ArrSum(amps[],sig,ampstd);
 Message("SNR is ", sig/thres);
 end

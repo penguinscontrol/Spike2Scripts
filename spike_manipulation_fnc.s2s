@@ -34,7 +34,7 @@ endif;
 
 end
 
-proc extractFeat(out[],in[][],opt%)
+proc extractFeatMat(out[],in[][],opt%)
 var n%, m%, temp[samps%];
     for n% := 0 to (wcnt%-1) do
         for m% := 0 to (samps%-1) do
@@ -47,6 +47,23 @@ var n%, m%, temp[samps%];
                 out[n%] := temp[Min(temp[])];
         endcase;    
     next;
+end
+
+proc extractFeatWave(ch%,out[],opt%);
+if ChanKind(ch%) = 6 then 'if ch% is a wavemark
+    var n%, t := NextTime(ch%, -1);
+    var curv% := View();
+    var wid := View(curv%).getWavemarkInfo(ch%,1);
+    docase
+    case opt% = 1 then;
+        for n% := 0 to (wcnt%-1) do
+            out[n%] := ChanMeasure(ch%,8,t,t+BinToX(wid)-1);
+        next;     
+    endcase;       
+else
+    PrintLog("Unsuitable Channel!");
+    halt;
+endif;    
 end
 
 func getWavemarkInfo(ch%,opt%)
