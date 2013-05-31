@@ -38,7 +38,7 @@ if View(ViewLink()).ChanList(dummychreal%, 16) > 0 then 'If wavemarks exist
     wvmrkch% := dummychreal%[Max(dummychreal%)];                  'get highest wavemark
 endif;                                          
 wcnt% := View(mainfile%).countwaves(wvmrkch%); 'count spikes;
-samps% := View(ViewLink()).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+samps% := View(mainfile%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
 View(mainfile%).getwaves(wvmrkch%,data[][]);
 var amps[wcnt%], sig,ampstd;
