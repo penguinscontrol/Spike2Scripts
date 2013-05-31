@@ -1,0 +1,12 @@
+#include "C:\Users\Radu\Documents\GitHub\Spike2Scripts\spike_manipulation_fnc.s2s"
+
+var v12% := ViewFind("R166L1A3_19800.SMR");
+FrontView(v12%);
+
+var cur1% := CursorNew();
+var t := NextTime(3,-1);
+Cursor(cur1%, t);  'Fetch the cursor
+
+var wid := View(v12%).getWavemarkInfo(3,1);
+var cur2% := CursorNew();
+Cursor(cur2%, t+BinToX(wid-1));  'Fetch the cursor

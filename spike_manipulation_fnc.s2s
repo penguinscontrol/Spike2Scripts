@@ -19,12 +19,13 @@ end
 
 proc getwaves(ch%,out[][]) 'saves the spike waveforms to out[][]
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark
-var t:= -1, n%, m%, code%[4], temp[samps%];
-for n% := 0 to (wcnt%-1) do
-    t:= NextTime(ch%, t, code%, temp[]); 'save current spike to temp[]
-    for m% := 0 to (samps%-1) do 'Save current spike (temp[]) to out[][]
-        out[n%][m%] := temp[m%];
-    next;
+    samps% := getWavemarkInfo(ch%,1);    
+    var t:= -1, n%, m%, code%[4], temp[samps%];
+    for n% := 0 to (wcnt%-1) do
+        t:= NextTime(ch%, t, code%, temp[]); 'save current spike to temp[]
+        for m% := 0 to (samps%-1) do 'Save current spike (temp[]) to out[][]
+            out[n%][m%] := temp[m%];
+        next;
     next;
 else
     PrintLog("Unsuitable Channel!");
@@ -48,3 +49,18 @@ var n%, m%, temp[samps%];
     next;
 end
 
+func getWavemarkInfo(ch%,opt%)
+var start%, show%, pre%, out, SSHdl%;
+if ChanKind(ch%) = 6 then 'if ch% is a wavemark
+    ChanSelect(ch%,1);
+    SSHdl% := SSOpen(1,0);
+    docase
+    case opt% = 1 then SSTempSizeGet(start%,show%,pre%); 'number of points in raw data display
+        out := show%;
+    endcase;       
+else
+    PrintLog("Unsuitable Channel!");
+    halt;
+endif;
+return out;
+end
