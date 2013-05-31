@@ -28,6 +28,15 @@ thres := View(mainfile%).getnoise(filtered%);
 newmark% := View(mainfile%).openwavem(filtered%,thres,stdmin,stdmax); 'Open a new wavemark dialogue
 
 Interact("Press OK to get SNR estimate",4607);
+var dummych%, dummychvec%[2]; 'convoluted method to extract higest numbered wavemark, assuming it's the one you just created.
+if View(ViewLink()).ChanList(dummychvec%, 16) > 0 then 'If wavemarks exist
+    dummych% := View(ViewLink()).ChanList(dummychvec%, 16)+1;                 'get their number and then
+endif;                                          
+var dummychreal%[dummych%];                                                 'make a vector to hold all of them
+if View(ViewLink()).ChanList(dummychreal%, 16) > 0 then 'If wavemarks exist
+    dummychreal%[0] := 0;                 'discard first entry
+    wvmrkch% := dummychreal%[Max(dummychreal%)];                  'get highest wavemark
+endif;                                          
 wcnt% := View(mainfile%).countwaves(wvmrkch%); 'count spikes;
 samps% := View(ViewLink()).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;

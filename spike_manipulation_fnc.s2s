@@ -1,6 +1,6 @@
 var samps% := 32; 'how many samples per waveform?
 var wcnt%; 'Count waveforms
-var wvmrkch% := 3; 'wavemark channel identifier
+var wvmrkch%; 'wavemark channel identifier
 
 func countwaves(ch%) 'counts the waves in a wavemark
 var t:= -1, n:=0;
