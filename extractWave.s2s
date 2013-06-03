@@ -35,14 +35,16 @@ endif;
 var dummychreal%[dummych%];                                                 'make a vector to hold all of them
 if View(ViewLink()).ChanList(dummychreal%, 16) > 0 then 'If wavemarks exist
     dummychreal%[0] := 0;                 'discard first entry
-    wvmrkch% := dummychreal%[Max(dummychreal%)];                  'get highest wavemark
+    wvmrkch% := dummychreal%[Max(dummychreal%)];                  'get latest wavemark
 endif;                                          
 wcnt% := View(mainfile%).countwaves(wvmrkch%); 'count spikes;
-samps% := View(mainfile%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
-var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
-View(mainfile%).getwaves(wvmrkch%,data[][]);
-var amps[wcnt%], sig,ampstd;
-View(mainfile%).extractFeatMat(amps[],data[][],1);
+'samps% := View(mainfile%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+'var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
+'View(mainfile%).getwaves(wvmrkch%,data[][]);
+'var amps[wcnt%], sig,ampstd;
+'View(mainfile%).extractFeatMat(amps[],data[][],1);
+var amps[wcnt%], sig, ampstd; 'save amplitudes to variable amps
+View(mainfile%).extractFeatWave(wvmrkch%,amps[],1);
 ArrSum(amps[],sig,ampstd);
 Message("SNR is ", sig/thres);
 end
