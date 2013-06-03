@@ -1,7 +1,7 @@
 #include "spike_manipulation_fnc.s2s"
 #include "noise_estimate_fcn.s2s"
 
-var timevw%;
+var timevw%, tempinthvw%, myinthvw%;
 
 toolz();   'Try it out
 Halt;
@@ -11,6 +11,8 @@ timevw% := View();
 ToolbarClear();     'Remove any old buttons
 ToolbarSet(0, "", idlefun%);   'Idle routine
 ToolbarSet(1, "&PredictPCA", PredictPCA%);   'Link to function
+ToolbarSet(2, "INTH",MyINTH%);
+ToolbarSet(4, "Quit",quit%);
 return Toolbar("Things you can do", 511);
 end;
 
@@ -52,4 +54,61 @@ var p, mu, std;
 ArrSum(data[],mu,std);
 
 return p;
+end
+
+func MyINTH%()
+View(timevw%);
+wvmrkch% := ChanChoose();
+
+var binsz := 0.0005;
+var binco% := 200;
+
+myinthvw% := FileNew(12,0);
+var x[binco%],y[binco%];
+ArrConst(x[],binsz*1000); ArrIntgl(x[]);
+
+View(timevw%);
+var codescnt%;
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2);
+var i%, inthch%;
+var newname$;
+'var offset;
+for i%:= 0 to codescnt% do
+    View(timevw%);
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,i%);
+    SetINTH(wvmrkch%, binco%, binsz);
+    Process(0,View(timevw%).MaxTime(),0,1);
+    tempinthvw% := View();
+    ArrConst(y,View(tempinthvw%,1).[]);
+    View(tempinthvw%); FileClose(0,-1);
+    View(myinthvw%);
+    
+    if i% = 0 then
+        inthch% := 1;
+        XYSetChan(1,binco%,0,5);
+    else
+        inthch% := XYSetChan(0,binco%,0,5);
+    endif;
+   
+    XYAddData(inthch%,x[],y[]);
+    'XYOffset(inthch%,0,offset);
+    ChanColourSet(inthch%,2,Rand(),Rand(),Rand());
+    newname$ := "Cluster "+Str$(i%);
+    ChanTitle$(inthch%,newname$);
+    ChanShow(inthch%,0);
+    'offset += 1.1*y[Max(y[])];
+next;
+ChanShow(2,1);
+XYKey(1,1); 'Show legend
+XYKey(4,80); 'Move legend to the right 80% of x range
+XYKey(5,10);
+Xunits$("ms");
+View(timevw%).MarkMask(wvmrkch%,0,1,-1);
+WindowVisible(1);
+return 1;
+end
+
+func quit%()
+return 0
 end

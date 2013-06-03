@@ -21,6 +21,7 @@ ok% := DlgShow(vtrch%,wavesch%);    'ok% is 0 if user cancels,  variables update
 var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
 
 thres := getnoise(filtered%);
+ChanDelete(filtered%);
 
 wcnt% := View(timevw%).countwaves(wavesch%); 'count spikes;
 var amps[wcnt%]; 'save amplitudes to variable amps

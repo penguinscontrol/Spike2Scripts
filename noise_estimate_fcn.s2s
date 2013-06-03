@@ -5,6 +5,7 @@ var data[max%], n%;
 n% := ChanData(ch%, data[], 0, MaxTime());
 Abs(data[]);
 noise := median(data[])/0.6745;
+
 return noise;
 end
 
