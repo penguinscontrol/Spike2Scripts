@@ -27,8 +27,9 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
             out[n%][m%] := temp[m%];
         next;
     next;
+    PrintLog("Saved ", n%, " Spikes at ", samps%, " samples per spike.\n")
 else
-    PrintLog("Unsuitable Channel!");
+    PrintLog("Unsuitable Channel!\n");
     halt;
 endif;
 
@@ -51,19 +52,31 @@ end
 
 proc extractFeatWave(ch%,out[],opt%);
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark
-    var n%, t := NextTime(ch%, -1);
-    var curv% := View();
-    var wid := View(curv%).getWavemarkInfo(ch%,1);
+    var n%, t := NextTime(ch%, -1); 'n% counts through the for loop, t is initialized with the first spiketime
+    var curv% := View(); 'save view because getWavemarInfo will change to a different one
+    var wid := View(curv%).getWavemarkInfo(ch%,1); 'how many samples wide is the spike?'
     docase
     case opt% = 1 then;
         for n% := 0 to (wcnt%-1) do
             out[n%] := ChanMeasure(ch%,8,t,t+BinToX(wid-1));
-            PrintLog("Amplitude of spike ", n%, " is ", out[n%], " at time ", t, "\n");
+            'PrintLog("Peak of spike ", n%, " is ", out[n%], " at time ", t, "\n");
             t := NextTime(ch%, t);
-        next;     
+        next;
+    case opt% = 2 then;
+        for n% := 0 to (wcnt%-1) do
+            out[n%] := ChanMeasure(ch%,9,t,t+BinToX(wid-1));
+            'PrintLog("Trough of spike ", n%, " is ", out[n%], " at time ", t, "\n");
+            t := NextTime(ch%, t);
+        next;
+    case opt% = 3 then;
+        for n% := 0 to (wcnt%-1) do
+            out[n%] := ChanMeasure(ch%,10,t,t+BinToX(wid-1));
+            'PrintLog("Peak to peak of spike ", n%, " is ", out[n%], " at time ", t, "\n");
+            t := NextTime(ch%, t);
+        next; 
     endcase;       
 else
-    PrintLog("Unsuitable Channel!");
+    PrintLog("Unsuitable Channel!\n");
     halt;
 endif;    
 end
@@ -78,7 +91,7 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
         out := show%;
     endcase;       
 else
-    PrintLog("Unsuitable Channel!");
+    PrintLog("Unsuitable Channel!\n");
     halt;
 endif;
 return out;

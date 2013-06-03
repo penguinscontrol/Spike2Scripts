@@ -1,0 +1,55 @@
+#include "spike_manipulation_fnc.s2s"
+#include "noise_estimate_fcn.s2s"
+
+var timevw%;
+
+toolz();   'Try it out
+Halt;
+
+Func toolz()    'Set your own name...
+timevw% := View();
+ToolbarClear();     'Remove any old buttons
+ToolbarSet(0, "", idlefun%);   'Idle routine
+ToolbarSet(1, "&PredictPCA", PredictPCA%);   'Link to function
+return Toolbar("Things you can do", 511);
+end;
+
+Func idlefun%()   'Button 0 routine
+'Your code in here...
+return 1;  'This leaves toolbar active
+end;
+
+Func PredictPCA%()   'Button 1 routine
+wvmrkch% := ChanChoose();
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
+var scores[wcnt%][samps%], variances[samps%],components[samps%][samps%];
+ArrConst(scores[][],data[][]);
+PCA(0,scores[][],variances[],components[][]);
+return 0;  'This stops the toolbar
+end;
+
+func ChanChoose()
+var wavesch%,ok%;
+DlgCreate("Channel Selection");  'Start new dialog
+DlgChan(1,"Please indicate WaveMark channel",131088);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(wavesch%);    'ok% is 0 if user cancels,  variables updated if not
+if ChanKind(wavesch%) = 6 then 'if ch% is a wavemark
+    PrintLog("You have selected channel ", wavesch%, " for analysis.\n");
+    return wavesch%;
+else
+    PrintLog("Unsuitable channel!\n");
+    halt;
+endif;
+
+end
+
+func NormTst(data[])
+var p, mu, std;
+ArrSum(data[],mu,std);
+
+return p;
+end

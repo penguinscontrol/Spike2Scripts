@@ -1,14 +1,14 @@
 #include "noise_estimate_fcn.s2s"
 #include "spike_manipulation_fnc.s2s"
 
-var mainfile%, sig, thres, ampstd;
+var timevw%, sig, thres, ampstd;
                                                             
 main();
 halt();
 
 proc main();
-mainfile% := ViewLink();
-View(mainfile%);
+timevw% := ViewLink();
+View(timevw%);
 var ok%,wavesch%,vtrch%;
 DlgCreate("SNR Estimator");  'Start new dialog
 DlgChan(1,"Please indicate Voltage Trace",131584);
@@ -18,13 +18,13 @@ DlgButton(1,"OK");
 ok% := DlgShow(vtrch%,wavesch%);    'ok% is 0 if user cancels,  variables updated if not
 
 'Filter the raw signal 
-var filtered% := View(mainfile%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
+var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
 
 thres := getnoise(filtered%);
 
-wcnt% := View(mainfile%).countwaves(wavesch%); 'count spikes;
+wcnt% := View(timevw%).countwaves(wavesch%); 'count spikes;
 var amps[wcnt%]; 'save amplitudes to variable amps
-View(mainfile%).extractFeatWave(wavesch%,amps[],1);
+View(timevw%).extractFeatWave(wavesch%,amps[],1);
 ArrSum(amps[],sig,ampstd);
 Message("SNR is ", sig/thres);
 end
