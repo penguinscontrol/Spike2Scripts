@@ -11,8 +11,8 @@ timevw% := View();
 ToolbarClear();     'Remove any old buttons
 ToolbarSet(0, "", idlefun%);   'Idle routine
 ToolbarSet(1, "&PredictPCA", PredictPCA%);   'Link to function
-ToolbarSet(2, "INTH",MyINTH%);
-ToolbarSet(4, "Quit",quit%);
+ToolbarSet(2, "INTH",MyINTH2%);
+ToolbarSet(5, "Quit",quit%);
 return Toolbar("Things you can do", 511);
 end;
 
@@ -22,7 +22,7 @@ return 1;  'This leaves toolbar active
 end;
 
 Func PredictPCA%()   'Button 1 routine
-wvmrkch% := ChanChoose();
+wvmrkch% := WvmrkChoose();
 wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
 samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
@@ -32,7 +32,7 @@ PCA(0,scores[][],variances[],components[][]);
 return 0;  'This stops the toolbar
 end;
 
-func ChanChoose()
+func WvmrkChoose()
 var wavesch%,ok%;
 DlgCreate("Channel Selection");  'Start new dialog
 DlgChan(1,"Please indicate WaveMark channel",131088);
@@ -56,9 +56,9 @@ ArrSum(data[],mu,std);
 return p;
 end
 
-func MyINTH%()
+func MyINTH%()   'INTH to XY View
 View(timevw%);
-wvmrkch% := ChanChoose();
+wvmrkch% := WvmrkChoose();
 
 var binsz := 0.0005;
 var binco% := 200;
@@ -92,18 +92,66 @@ for i%:= 0 to codescnt% do
     endif;
    
     XYAddData(inthch%,x[],y[]);
-    'XYOffset(inthch%,0,offset);
-    ChanColourSet(inthch%,2,Rand(),Rand(),Rand());
+    
+    var r,g,b;
+    ColourGet(1,i%,r,g,b);
+    ChanColourSet(i%+1,1,0,0,0);
+    ChanColourSet(i%+1,2,r,g,b);
+    
     newname$ := "Cluster "+Str$(i%);
     ChanTitle$(inthch%,newname$);
     ChanShow(inthch%,0);
-    'offset += 1.1*y[Max(y[])];
 next;
 ChanShow(2,1);
 XYKey(1,1); 'Show legend
 XYKey(4,80); 'Move legend to the right 80% of x range
 XYKey(5,10);
 Xunits$("ms");
+View(timevw%).MarkMask(wvmrkch%,0,1,-1);
+WindowVisible(1);
+return 1;
+end
+
+func MyINTH2%()    'INTH to Result View
+
+wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
+
+var binsz := 0.0005;  'How big the bin is, in s
+var binco% := 200;  'how many bins
+
+var codescnt%;   'how many clusters
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+myinthvw% := SetResult((codescnt%+1),binco%,1000*binsz,0,"INTH", "ms", "", "ISI");
+var x[binco%],y[binco%];
+ArrConst(x[],binsz*1000); ArrIntgl(x[]);
+
+var i%;
+var newname$;
+for i%:= 0 to codescnt% do
+    
+    View(timevw%).MarkMask(wvmrkch%,0,0,-1); 'Show all
+    View(timevw%).MarkMask(wvmrkch%,0,1,i%); 'Isolate Current
+    
+    View(timevw%);
+    SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
+    Process(0,View(timevw%).MaxTime(),0,1);
+    tempinthvw% := View();
+    
+    ArrConst(y,View(tempinthvw%,1).[]);
+    View(tempinthvw%); FileClose(0,-1);
+    View(myinthvw%).ArrConst(View(myinthvw%,i%+1).[],y);
+    
+    var r,g,b;
+    ColourGet(1,i%,r,g,b);
+    ChanColourSet(i%+1,1,0,0,0);
+    ChanColourSet(i%+1,2,r,g,b);
+    newname$ := "Cluster "+Str$(i%);
+    ChanTitle$(i%+1,newname$);
+    ChanShow(i%+1,0);
+next;
+View(myinthvw%).Optimise(-1);
+View(myinthvw%).XRange(0,50);
 View(timevw%).MarkMask(wvmrkch%,0,1,-1);
 WindowVisible(1);
 return 1;

@@ -1,0 +1,83 @@
+'$ModOnResult.s2s|Example script to generate copy of on-line result view with modified results
+'Example uses PSTH, changing bin values to spikes per sweep
+
+
+var data%;                                              'Data file handle
+var ch% := 1;                                           'Analysis channel
+var anTime := 0.3;                                      'PSTH width
+var bins%;                                              'Number of bins in PSTH
+var bSize := 0.001;                                     'PSTH bin size
+var offset := 0.1;              
+var trig% := 31;                                        'Trigger channel
+var res%;                                               'Handle of PSTH
+var copy%;                                              'Handle of created result view to contain modified data
+var preSweeps%;                                         'Previous number of sweeps added to result view
+var copyData[1];                                        'Array to hold 
+
+DoToolbar();
+
+
+Proc DoToolbar();
+ToolbarSet(1, "Quit");
+ToolbarSet(3, "New file", New%);
+Toolbar("Modified on-line result view",1023);
+end;
+
+
+Func New%();
+data% := FileNew(0,0);                                     'Open new file to sample
+if data% > 0 then                                          'Proceed if file succeeded in opening
+    Window(0,0,50,100);
+    FrontView(data%);
+    bins% := Round(anTime/bSize);                          'Get number of bins in PSTH
+    Resize copyData[bins%];                                'Set array size to number of bins in result view
+    res% := SetPSTH(ch%,bins%,bSize,offset,trig%);         'Set up PSTH result view
+    Processtriggered(0.1,0.05,trig%);                      'Set it to update on each trigger event
+    copy% := SetResult(1,bins%,bSize,offset,"PSTH","s","Spikes");   'Set empty result view with no applied processes
+    Window(50,0,100,100);
+    FrontView(copy%);                                       'Make visible
+    ToolbarClear(3);
+    ToolbarSet(3, "Start", Start%);
+endif;
+return 1;
+end;
+
+
+
+Func Start%()
+View(data%);
+preSweeps% := 0;                                        'Reset sweep count
+SampleStart();                                          'Start sampling
+ToolbarSet(0, "Idle", Idle%);                           'Start idle routine
+ToolbarClear(3);
+ToolbarSet(3, "Stop", Stop%);
+return 1;
+end;
+
+
+Func Stop%()
+View(data%);
+ToolbarClear(0);
+SampleStop();
+ToolbarClear(3);
+ToolbarSet(3, "New file", New%);
+return 1;
+end;
+
+
+Func Idle%()
+var n%;
+View(res%);
+n% := Sweeps();
+if n% > preSweeps% then                                 'If a new sweep is detected
+    ArrConst(copyData[],View(res%,1).[]);               'Copy result view data to array
+    ArrDiv(copyData[],n%);                              'Divide data by number of sweeps - can be replaced with your own manipulation
+    ArrConst(View(copy%,1).[],copyData[]);              'Copy modified data to new result view
+    preSweeps% := n%;                                   'Update sweep count
+    View(copy%);
+    Sweeps(n%);
+    Optimise(1);
+endif;
+return 1;
+end;
+
