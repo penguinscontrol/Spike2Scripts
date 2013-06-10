@@ -11,7 +11,7 @@ timevw% := ViewLink();
 View(timevw%);
 var ok%,wavesch%,vtrch%;
 DlgCreate("SNR Estimator");  'Start new dialog
-DlgChan(1,"Please indicate Voltage Trace",131584);
+DlgChan(1,"Please indicate Voltage Trace",131585);
 DlgChan(2,"Please indicate WaveMark channel",131088);
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");

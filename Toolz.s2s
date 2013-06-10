@@ -1,7 +1,7 @@
 #include "spike_manipulation_fnc.s2s"
 #include "noise_estimate_fcn.s2s"
 
-var timevw%, tempinthvw%, myinthvw%;
+var timevw%, tempinthvw%, myinthvw%, myavgvw%,tempavgvw%;
 
 toolz();   'Try it out
 Halt;
@@ -13,6 +13,7 @@ ToolbarSet(0, "", idlefun%);   'Idle routine
 ToolbarSet(1, "&PredictPCA", PredictPCA%);   'Link to function
 ToolbarSet(2, "INTH",MyINTH2%);
 ToolbarSet(3,"SNR",snrfromfile%);
+ToolbarSet(4,"Waveform",waveavg%);
 ToolbarSet(5, "Quit",quit%);
 return Toolbar("Things you can do", 511);
 end;
@@ -123,38 +124,43 @@ var binco% := 200;  'how many bins
 var codescnt%;   'how many clusters
 codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
 
-myinthvw% := SetResult((codescnt%+1),binco%,1000*binsz,0,"INTH", "ms", "", "ISI");
-var y[binco%];
+SetResult((codescnt%+1),binco%,1000*binsz,0,"INTH", "ms", "", "ISI");
+myinthvw% := View();
+var i%;   'counter for for loo
+var newname$; 'Channel name
 
-var i%;
-var newname$;
 for i%:= 0 to codescnt% do
     
     View(timevw%).MarkMask(wvmrkch%,0,0,-1); 'Show all
     View(timevw%).MarkMask(wvmrkch%,0,1,i%); 'Isolate Current
     
     View(timevw%);
-    SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
-    Process(0,View(timevw%).MaxTime(),0,1);
-    tempinthvw% := View();
+    tempinthvw% := SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
+    Process(0,View(timevw%).MaxTime(),0,0);
     
-    ArrConst(y,View(tempinthvw%,1).[]);      
+    ArrConst(View(myinthvw%,i%+1).[],View(tempinthvw%,1).[]);      
     View(tempinthvw%); FileClose(0,-1);
-    View(myinthvw%).ArrConst(View(myinthvw%,i%+1).[],y);
     
+    View(myinthvw%);
     var r,g,b;
     ColourGet(1,i%,r,g,b);
     ChanColourSet(i%+1,1,0,0,0);
     ChanColourSet(i%+1,2,r,g,b);
     newname$ := "Cluster "+Str$(i%);
     ChanTitle$(i%+1,newname$);
-    ChanShow(i%+1,0);
+    ChanShow(i%+1);
 next;
-View(myinthvw%).Optimise(-1);
-View(myinthvw%).XRange(0,50);
-View(timevw%).MarkMask(wvmrkch%,0,1,-1);
+
+View(myinthvw%);
+Optimise(-1);
+XRange(0,50);
 WindowVisible(1);
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1);
+
 return 1;
+
 end
 
 func snrfromfile%()
@@ -162,7 +168,7 @@ var sig, thres, ampstd;
 View(timevw%);
 var ok%,wavesch%,vtrch%;
 DlgCreate("SNR Estimator");  'Start new dialog
-DlgChan(1,"Please indicate Voltage Trace",131584);
+DlgChan(1,"Please indicate Voltage Trace",131585);
 DlgChan(2,"Please indicate WaveMark channel",131088);
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
@@ -181,6 +187,53 @@ ArrSum(amps[],sig,ampstd);
 Message("SNR is ", sig/thres);
 return 1
 
+end
+
+func waveavg%()
+wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+
+var codescnt%;   'how many clusters
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+myavgvw% := SetResult((codescnt%+1),samps%,View(timevw%).Binsize(),0,"Average Waveform", "ms", "", "","",4);
+
+var i%, newname$, y[samps%];
+for i%:= 0 to codescnt% do
+    View(timevw%);
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,i%);
+    
+    tempavgvw% := SetAverage(wvmrkch%,samps%,0, wvmrkch%,5,0);
+    Process(0,View(timevw%).MaxTime(),0,0);
+    
+    ArrConst(View(myavgvw%,i%+1).[],View(tempavgvw%,1).[]); ' Copy values
+    View(tempavgvw%); 
+    BinError(1,0,y[],0);   'Copy from current average view....
+    View(myavgvw%);
+    Sweeps(10);   ' Sweeps has to be greater than 1: I don't know what sweeps is yet
+    BinError(i%+1,0,y[],10);  '... into new channel
+    View(tempavgvw%); FileClose(0,-1);
+    
+    View(myavgvw%);
+    var r,g,b;
+    ColourGet(1,i%,r,g,b);
+    ChanColourSet(i%+1,1,0,0,0);
+    ChanColourSet(i%+1,2,r,g,b);
+    newname$ := "Cluster "+Str$(i%);
+    ChanTitle$(i%+1,newname$);
+    DrawMode(i%+1,13,0,3); 'Set Lines
+    ChanShow(i%+1);
+    
+next;
+
+View(myavgvw%);
+Optimise(-1);
+WindowVisible(1);
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1);
+return 1
 end
 
 func quit%()
