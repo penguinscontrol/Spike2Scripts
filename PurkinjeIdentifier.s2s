@@ -1,0 +1,8 @@
+#include "spike_manipulation_fnc.s2s"
+#include "noise_estimate_fcn.s2s"
+
+main();
+halt();
+
+proc main()
+end

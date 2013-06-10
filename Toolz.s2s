@@ -222,13 +222,15 @@ for i%:= 0 to codescnt% do
     ChanColourSet(i%+1,2,r,g,b);
     newname$ := "Cluster "+Str$(i%);
     ChanTitle$(i%+1,newname$);
-    DrawMode(i%+1,13,0,3); 'Set Lines
+    DrawMode(i%+1,13,0,3); 'Set cubic spline
+    ChanPenWidth(i%+1,3);
     ChanShow(i%+1);
     
 next;
 
 View(myavgvw%);
 Optimise(-1);
+ChanHide(1);
 WindowVisible(1);
 
 View(timevw%);

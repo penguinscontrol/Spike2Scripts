@@ -1,0 +1,22 @@
+#include "spike_manipulation_fnc.s2s"
+
+var timevw% := View();
+wvmrkch% := 3;
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+
+main();
+halt();
+
+proc main()
+
+var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
+
+var ok%;
+MatLabOpen(1);
+MatLabShow(1);
+MatLabPut("mydata",data[][]);
+MatlabEval("hold all; plot(mydata');");
+Message("Click to finish");
+MatLabClose();
+end
