@@ -2,6 +2,8 @@ var samps% := 32; 'how many samples per waveform?
 var wcnt%; 'Count waveforms
 var wvmrkch%; 'wavemark channel identifier
 
+var timevw%, tempinthvw%, myinthvw%, myavgvw%,tempavgvw%;
+
 func countwaves(ch%) 'counts the waves in a wavemark
 var t:= -1, n:=0;
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark

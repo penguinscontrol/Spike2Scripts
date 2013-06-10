@@ -1,8 +1,18 @@
-#include "spike_manipulation_fnc.s2s"
-#include "noise_estimate_fcn.s2s"
+#include "tool_fun.s2s"
 
 main();
 halt();
 
 proc main()
+var timevw% := View();
+wvmrkch% := WvmrkChoose();
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+
+var code%[4],temp[samps%];
+var i%, t := NextTime(wvmrkch%,-1,code%,temp[]);
+var cur[View(timevw%).XtoBin(0.005)];
+for i%:= 0 to (wcnt%-1) do
+next;
+
 end
