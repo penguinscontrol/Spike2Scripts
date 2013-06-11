@@ -1,18 +1,149 @@
 #include "tool_fun.s2s"
 
+var tsz := 0.005;
+var t := -1;
+timevw% := View();
+var ssz := View(timevw%).Floor(tsz/Binsize(1));
+var fsz% := Pow(2,findpwof2(ssz));
+var asz% := fsz%/2+1; 'number of samples corresponding to amplitude of fft
+
+var ccode%[4]; 'new code for complex spike
+ArrConst(ccode%[],-1);
+ccode%[0] := 63;
+var ssclus%; 'code for simple spikes
+
+var wavw% := SetResult(1,ssz,1,0,"Waveform", "samples", "V", "","",0);
+ChanTitle$(1,"Waveform");
+DrawMode(1,13);
+var fftvw% := SetResult(1,asz%,1,0,"FFT", "1/samples", "V", "","",0);
+ChanTitle$(1,"Amplitude of FFT");
+DrawMode(1,1);
+View(timevw%);
+
+if not(CursorExists(1)) then
+    CursorNew(0,1);
+endif;
+
+if not(CursorExists(2)) then
+    CursorNew(0,2);
+endif;
+
 main();
 halt();
 
-proc main()
-var timevw% := View();
+func main()
 wvmrkch% := WvmrkChoose();
+ssclus% := IntChoose("Purkinje Finder","Please select a simple spike cluster");
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,ssclus%);
+MarkMask(wvmrkch%,0,1,ccode%[0]);
 wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
 samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 
-var code%[4],temp[samps%];
-var i%, t := NextTime(wvmrkch%,-1,code%,temp[]);
-var cur[View(timevw%).XtoBin(0.005)];
-for i%:= 0 to (wcnt%-1) do
-next;
+ndrawfft%();
+View(wavw%).WindowVisible(1);
+View(fftvw%).WindowVisible(1);
+ToolbarClear();     'Remove any old buttons
+ToolbarSet(0, "", dummy%);   'Idle routine
+ToolbarSet(1, "Next|0x21", ndrawfft%);   'Link to function
+ToolbarSet(2, "Prev|0x22", pdrawfft%);   'Link to function
+ToolbarSet(3, "Mark as C|0x24", markasc%);
+ToolbarSet(4, "Mark as S|0x23", markass%);
+ToolbarSet(5, "Quit", quit%);
+return Toolbar("Let's find a Purkinje cell", 511);
+MarkMask(wvmrkch%,0,0,-1);
+end
 
+func ndrawfft%()
+var code%[4],wvfrm[samps%];
+t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+if t <> -1 then
+    var cur[ssz];
+    View(timevw%).ChanData(1,cur[],t+samps%*BinSize(1),MaxTime());
+
+    ArrConst(View(wavw%,1).[],cur[]); 'copy waveform to chan 1 of result view
+
+    View(wavw%).Optimise(-1);
+
+    ArrFFT(cur[],5); 'take power spectrum of fft of spike
+
+    var fft[asz%]; ArrConst(fft[],cur[]); 'save first half of fft vector (amplitude information)
+
+    fft[0] := 0;
+    ArrConst(View(fftvw%,1).[],fft[]);   'display amplitude of fft
+
+    View(fftvw%).Optimise(-1);
+
+    View(timevw%).Draw(t, 3*tsz);
+    Cursor(1,(t+View(timevw%).BinSize(1)*samps%));
+    Cursor(2,(t+View(timevw%).BinSize(1)*samps%+tsz));
+endif;
+
+return 1;
+end
+
+func pdrawfft%()
+var code%[4],wvfrm[samps%];
+t := LastTime(wvmrkch%,t,code%,wvfrm[]);
+if t <> -1 then
+    var cur[ssz];
+    View(timevw%).ChanData(1,cur[],t+BinSize(1)*samps%,MaxTime());
+
+    ArrConst(View(wavw%,1).[],cur[]); 'copy waveform to chan 1 of result view
+
+    View(wavw%).Optimise(-1);
+
+    ArrFFT(cur[],5); 'take power spectrum of fft of spike
+
+    var fft[asz%]; ArrConst(fft[],cur[]); 'save first half of fft vector (amplitude information)
+    
+    fft[0] := 0;
+    ArrConst(View(fftvw%,1).[],fft[]);   'display amplitude of fft
+
+    View(fftvw%).Optimise(-1);
+
+    View(timevw%).Draw(t, 3*tsz);
+    Cursor(1,(t+View(timevw%).BinSize(1)*samps%));
+    Cursor(2,(t+View(timevw%).BinSize(1)*samps%+tsz));
+endif;
+
+return 1;
+end
+
+func dummy%()
+return 1
+end
+
+func markasc%()
+View(timevw%);
+MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), ccode%);
+Draw(t, 3*tsz);
+return 1
+end
+
+func markass%()
+View(timevw%);
+MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), ssclus%,-1,-1,-1);
+Draw(t, 3*tsz);
+return 1
+end
+
+func findpwof2(in)
+var n%;
+while in >1 do
+    in := in/2;
+    n% += 1;
+wend
+return n%-1;
+
+end
+
+func IntChoose(title$,msg$)
+var ok%,int0%;
+DlgCreate(title$);
+DlgInteger(1,msg$,0,64);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(int0%);
+return int0%
 end

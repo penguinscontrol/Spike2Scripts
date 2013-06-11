@@ -11,7 +11,8 @@ ToolbarSet(1, "&PredictPCA", PredictPCA%);   'Link to function
 ToolbarSet(2, "INTH",MyINTH2%);
 ToolbarSet(3,"SNR",snrfromfile%);
 ToolbarSet(4,"Waveform",waveavg%);
-ToolbarSet(5, "Quit",quit%);
+ToolbarSet(5,"Collision Detection",coldetect%);
+ToolbarSet(9, "Quit",quit%);
 return Toolbar("Things you can do", 511);
 end;
 

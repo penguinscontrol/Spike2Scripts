@@ -2,7 +2,6 @@
 #include "noise_estimate_fcn.s2s"
 
 var newmark%; 'view for the new wavemark
-var timevw%; 'view for the time series data
 var filtered%; 'Channel for filtered voltage trace
 
 var thres; 'Default spike detection threshold, waveclus style

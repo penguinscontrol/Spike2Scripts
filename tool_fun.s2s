@@ -220,6 +220,9 @@ View(timevw%);
 MarkMask(wvmrkch%,0,1,-1);
 return 1
 end
+func coldetect%()
+return 1
+end
 
 func quit%()
 return 0
