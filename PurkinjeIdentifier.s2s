@@ -32,6 +32,7 @@ halt();
 func main()
 wvmrkch% := WvmrkChoose();
 ssclus% := IntChoose("Purkinje Finder","Please select a simple spike cluster");
+ccode% := ssclus% + 30;
 MarkMask(wvmrkch%,0,0,-1);
 MarkMask(wvmrkch%,0,1,ssclus%);
 MarkMask(wvmrkch%,0,1,ccode%);
@@ -138,6 +139,12 @@ FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
 MatLabEval("PurkinjeIdentifier;");
 var newlabels[wcnt%];
 MatLabGet("newlabels",newlabels[]);
+
+t := -1;
+for i% := 1 to Len(newlabels[]) do
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), newlabels[i%-1],-1,-1,-1);
+next;    
 
 MatLabClose();
 ChanDelete(tmphold%);
