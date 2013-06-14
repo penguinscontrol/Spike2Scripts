@@ -1,7 +1,7 @@
 #include "spike_manipulation_fnc.s2s"
 
-var timevw% := View();
-wvmrkch% := 3;
+timevw% := View();
+wvmrkch% := 7;
 wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
 samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 

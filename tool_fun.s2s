@@ -101,7 +101,7 @@ func MyINTH2%()    'INTH to Result View
 
 wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
 
-var binsz := 0.0005;  'How big the bin is, in s
+var binsz := 0.00025;  'How big the bin is, in s
 var binco% := 200;  'how many bins
 
 var codescnt%;   'how many clusters

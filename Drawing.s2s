@@ -4,7 +4,7 @@ main();
 halt;
 
 proc main()
-var wvmrkch% := 3; 'wavemark channel identifier
+var wvmrkch% := 7; 'wavemark channel identifier
 
 var wcnt%; 'Count waveforms
 wcnt% := countwaves(wvmrkch%);
