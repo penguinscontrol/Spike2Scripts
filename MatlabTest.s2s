@@ -1,22 +1,32 @@
 #include "spike_manipulation_fnc.s2s"
 
-timevw% := View();
-wvmrkch% := 7;
-wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
-samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+'timevw% := View();
+'wvmrkch% := 7;
+'wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+'samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 
 main();
 halt();
 
 proc main()
 
-var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
+'var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
 
+var anumber := 2;
 var ok%;
-MatLabOpen(1);
-MatLabShow(1);
-MatLabPut("mydata",data[][]);
-MatlabEval("hold all; plot(mydata');");
+
+ok% := MatLabOpen(1);
+ok% := MatLabShow(1);
+
+ok% := MatlabEval("clear; clc;");
+ok% := MatLabPut("anumber",anumber);
+ok% := MatlabEval("anumber = ones(1,5).*anumber;");
+ok% := MatlabEval("fpritnf('%d',anumber);");
+
+var newnumber;
+ok% := MatlabGet("anumber",newnumber);
+Message(newnumber);
+
 Message("Click to finish");
 MatLabClose();
 end

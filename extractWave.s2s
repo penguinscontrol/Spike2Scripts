@@ -37,11 +37,13 @@ if View(timevw%).ChanList(dummychreal%, 16) > 0 then 'If wavemarks exist
 endif;
 
 wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+
 'samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 'var data[wcnt%][samps%], times[wcnt%]; 'save spikes here;
 'View(timevw%).getwaves(wvmrkch%,data[][]);
 'var amps[wcnt%], sig,ampstd;
 'View(timevw%).extractFeatMat(amps[],data[][],1);
+
 var amps[wcnt%], sig, ampstd; 'save amplitudes to variable amps
 View(timevw%).extractFeatWave(wvmrkch%,amps[],1);
 ArrSum(amps[],sig,ampstd);

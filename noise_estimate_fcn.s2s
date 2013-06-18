@@ -1,6 +1,11 @@
 func getnoise(ch%)
 var noise;
 var max% := XtoBin(MaxTime());
+
+if max% > 32000000 then
+    max% := 32000000
+endif;
+
 var data[max%], n%;
 n% := ChanData(ch%, data[], 0, MaxTime());
 Abs(data[]);

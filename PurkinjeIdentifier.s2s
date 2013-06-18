@@ -31,7 +31,7 @@ halt();
 
 func main()
 wvmrkch% := WvmrkChoose();
-ssclus% := IntChoose("Purkinje Finder","Please select a simple spike cluster");
+ssclus% := IntChoose("Purkinje Finder","Please select a simple spike cluster",64);
 ccode% := ssclus% + 30;
 MarkMask(wvmrkch%,0,0,-1);
 MarkMask(wvmrkch%,0,1,ssclus%);
@@ -45,12 +45,13 @@ ToolbarClear();     'Remove any old buttons
 ToolbarSet(0, "", dummy%);   'Idle routine
 ToolbarSet(1, "Next|0x21", nex%);   'Link to function
 ToolbarSet(2, "Prev|0x22", previ%);   'Link to function
-ToolbarSet(3, "Mark as C|0x24", markasc%);
-ToolbarSet(4, "Mark as S|0x23", markass%);
-ToolbarSet(5, "Auto Find", autopurk%);
-ToolbarSet(6, "Quit", quit%);
+ToolbarSet(3,"Go to Time...", gototime%);
+ToolbarSet(4, "Mark as C|0x24", markasc%);
+ToolbarSet(5, "Mark as S|0x23", markass%);
+ToolbarSet(6, "Auto Find", autopurk%);
+ToolbarSet(7, "Quit", quit%);
 return Toolbar("Let's find a Purkinje cell", 511);
-MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,-1);
 end
 
 proc drawfft(t,code%[],wvfrm[],cur[],fft[],update%);
@@ -117,7 +118,7 @@ var fft[asz%];
 
 t := -1;
 
-MatLabEval("clear;");
+var ok% := MatLabEval("clear; clc;");
 MatLabShow(1);
 
 View(timevw%);
@@ -131,23 +132,53 @@ for i% := 1 to wcnt% do
 next;
 
 ExportChanList(0, MaxTime(),tmphold%);
-FileSaveAs("E:\\Spike_Sorting\\spike2temp\\postss.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+FileSaveAs("E:\\Spike_Sorting\\spike2temp\\postss.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
 
 var temppath$ := FilePath$(0);
 FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
 
+ok% := MatLabPut("timelength",View(timevw%).MaxTime());
+ok% := MatLabPut("ssclus",ssclus%);
+MatLabEval("dbstop in PurkinjeIdentifier at 36;");
 MatLabEval("PurkinjeIdentifier;");
 var newlabels[wcnt%];
-MatLabGet("newlabels",newlabels[]);
-
-t := -1;
+ok% := MatLabGet("mynewlabels",newlabels[]);
+   
+t := -1;    'Apply new labels
 for i% := 1 to Len(newlabels[]) do
     t := NextTime(wvmrkch%,t,code%,wvfrm[]);
     MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), newlabels[i%-1],-1,-1,-1);
-next;    
+next;
 
+t := -1;    'Delete double counting of close spikes
+var nextt;
+
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,ccode%);
+
+repeat
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    nextt := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    if nextt-t < tsz then
+        MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), ssclus%,-1,-1,-1);
+    endif;
+until t = -1;
+             
 MatLabClose();
 ChanDelete(tmphold%);
+return 0
+end
+
+func gototime%()
+
+var code%[4],wvfrm[samps%];
+var cur[ssz];
+var fft[asz%];
+
+var newt% := IntChoose("Purkinje Finder","Go to time...",MaxTime());
+t := NextTime(wvmrkch%,newt%,code%,wvfrm[]);
+drawfft(t,code%[],wvfrm[],cur[],fft[],1);
+
 return 1
 end
 
@@ -179,10 +210,10 @@ return n%-1;
 
 end
 
-func IntChoose(title$,msg$)
+func IntChoose(title$,msg$,lim)
 var ok%,int0%;
 DlgCreate(title$);
-DlgInteger(1,msg$,0,64);
+DlgInteger(1,msg$,0,lim);
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(int0%);

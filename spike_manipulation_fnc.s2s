@@ -10,7 +10,7 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
 repeat
         t := NextTime(ch%, t);
         if t <> -1 then n+=1 endif; 
-        PrintLog("Found spike ", n, " at time ",t);
+        'PrintLog("Found spike ", n, " at time ",t);
 until t = -1;
 else
     n := -1;
@@ -29,7 +29,7 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
             out[n%][m%] := temp[m%];
         next;
     next;
-    PrintLog("Saved ", n%, " Spikes at ", samps%, " samples per spike.\n")
+    'PrintLog("Saved ", n%, " Spikes at ", samps%, " samples per spike.\n")
 else
     PrintLog("Unsuitable Channel!\n");
     halt;
@@ -89,7 +89,7 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
     ChanSelect(ch%,1);
     SSHdl% := SSOpen(1,0);
     docase
-    case opt% = 1 then SSTempSizeGet(start%,show%,pre%); 'number of points in raw data display
+    case opt% = 1 then View(SSHdl%).SSTempSizeGet(start%,show%,pre%); 'number of points in raw data display
         out := show%;
         
     case opt% = 2 then; 'number of clusters
