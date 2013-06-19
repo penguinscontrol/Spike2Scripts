@@ -11,7 +11,7 @@
 '
 ' 26/Jul/2012 TDB   First version produced by tidying existing scripts
 
-const spec$ := "R149*.bin";                                 ' The filename spec used to select files
+const spec$ := "R147*.bin";                                 ' The filename spec used to select files
 
 main();
 halt;

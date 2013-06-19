@@ -49,7 +49,8 @@ ToolbarSet(3,"Go to Time...", gototime%);
 ToolbarSet(4, "Mark as C|0x24", markasc%);
 ToolbarSet(5, "Mark as S|0x23", markass%);
 ToolbarSet(6, "Auto Find", autopurk%);
-ToolbarSet(7, "Quit", quit%);
+ToolbarSet(7, "Clear CS tails", cleartails%);
+ToolbarSet(8, "Quit", quit%);
 return Toolbar("Let's find a Purkinje cell", 511);
 MarkMask(wvmrkch%,0,1,-1);
 end
@@ -119,7 +120,6 @@ var fft[asz%];
 t := -1;
 
 var ok% := MatLabEval("clear; clc;");
-MatLabShow(1);
 
 View(timevw%);
 var tmphold% := MemChan(7,ssz);
@@ -139,6 +139,7 @@ FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
 
 ok% := MatLabPut("timelength",View(timevw%).MaxTime());
 ok% := MatLabPut("ssclus",ssclus%);
+ok% := MatLabPut("tsamp",View(timevw%).Binsize());
 MatLabEval("dbstop in PurkinjeIdentifier at 36;");
 MatLabEval("PurkinjeIdentifier;");
 var newlabels[wcnt%];
@@ -156,17 +157,62 @@ var nextt;
 MarkMask(wvmrkch%,0,0,-1);
 MarkMask(wvmrkch%,0,1,ccode%);
 
-repeat
+repeat 'if two complex spikes are real close, mark the first one as simple
     t := NextTime(wvmrkch%,t,code%,wvfrm[]);
     nextt := NextTime(wvmrkch%,t,code%,wvfrm[]);
     if nextt-t < tsz then
         MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), ssclus%,-1,-1,-1);
     endif;
 until t = -1;
+
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,ccode%);
+t:= -1;
+
+repeat 'if a complex spike has a simple spike in its tail, mark the ss as zero
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    MarkMask(wvmrkch%,0,1,ssclus%);
+    nextt := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    if nextt-t < tsz then
+        MarkSet(wvmrkch%,nextt-Binsize(1),nextt+Binsize(1), 0,-1,-1,-1);
+    endif;
+    MarkMask(wvmrkch%,0,0,ssclus%);
+until t = -1;
              
 MatLabClose();
 ChanDelete(tmphold%);
-return 0
+return 1
+end
+
+func cleartails%()
+
+var ok%,ssc%,ccc%,tl;
+DlgCreate("Clean Tails");
+DlgInteger(1,"Simple Spike Cluster:",0,64);
+DlgInteger(2,"Complex Spike Cluster:",0,64);
+DlgReal(3,"Tail length (ms):",0,100);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(ssc%,ccc%,tl);
+
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,ccode%);
+t:= -1;
+
+var code%[4],wvfrm[samps%];
+var nextt := -1;
+
+repeat 'if a complex spike has a simple spike in its tail, mark the ss as zero
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    MarkMask(wvmrkch%,0,1,ssclus%);
+    nextt := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    if nextt-t < tl/1000 then
+        MarkSet(wvmrkch%,nextt-Binsize(1),nextt+Binsize(1), 0,-1,-1,-1);
+    endif;
+    MarkMask(wvmrkch%,0,0,ssclus%);
+until t = -1;
+
+return 1
 end
 
 func gototime%()
