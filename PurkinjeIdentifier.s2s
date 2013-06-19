@@ -206,9 +206,7 @@ repeat 'if a complex spike has a simple spike in its tail, mark the ss as zero
     t := NextTime(wvmrkch%,t,code%,wvfrm[]);
     MarkMask(wvmrkch%,0,1,ssclus%);
     nextt := NextTime(wvmrkch%,t,code%,wvfrm[]);
-    if nextt-t < tl/1000 then
-        MarkSet(wvmrkch%,nextt-Binsize(1),nextt+Binsize(1), 0,-1,-1,-1);
-    endif;
+    MarkSet(wvmrkch%,t+Binsize(1),t+tl, 0,-1,-1,-1);
     MarkMask(wvmrkch%,0,0,ssclus%);
 until t = -1;
 
