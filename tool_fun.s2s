@@ -220,6 +220,43 @@ View(timevw%);
 MarkMask(wvmrkch%,0,1,-1);
 return 1
 end
+
+func wave3D%()
+wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+
+MatLabOpen(1); 'Open a connection to Matlab
+
+var code%[4],wvfrm[samps%];
+var tmphold% := MemChan(7,samps%);
+
+var t := -1;
+
+var ok% := MatLabEval("clear; clc;");
+ok% := MatLabPut("tsamp",Binsize(1));
+View(timevw%);
+
+var i%;
+for i% := 1 to wcnt% do
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    MemSetItem(tmphold%,0,t,code%,wvfrm[]);        
+next;
+
+ExportChanList(0, MaxTime(),tmphold%);
+FileSaveAs("E:\\Spike_Sorting\\spike2temp\\for3Ddraw.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+
+var temppath$ := FilePath$(0);
+FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
+
+MatLabEval("spike2_shape_heat_map;");
+Message("Click to continue...");
+MatLabClose();
+ChanDelete(tmphold%);
+
+return 1
+end
+
 func coldetect%()
 return 1
 end

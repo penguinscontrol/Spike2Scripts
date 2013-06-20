@@ -21,7 +21,7 @@ data_fft = fft(data);
 
 mynewlabels = ones(1,cls).*double(ssclus);
         
-whatttodo = 'fft_max_3sd';
+whatttodo = 'fft_max_sd';
 switch whatttodo
     case 'fft_max_1hz'
         
@@ -68,20 +68,20 @@ switch whatttodo
         
         mynewlabels(data_fft_sum >= cutoff) = ssclus+30;
         
-    otherwise %fft_max_3sd
+    otherwise %fft_max_sd
         
         data_fft_amp = abs(data_fft(1:(floor(rws/2)+1),:)); %get fft amplitudes
         
         freqs = linspace(0,Fsamp/2,(floor(rws/2)+1));
         llim = find(freqs > 0); llim = llim(1);
-        rlim = find(freqs < 4000); rlim = rlim(end);
+        rlim = find(freqs < 3000); rlim = rlim(end);
         
         data_fft_amp = data_fft_amp(llim:rlim,:);
         
         data_fft_maxes = max(data_fft_amp);
         
         [muhat,sigmahat] = normfit(data_fft_maxes');
-        cutoff = muhat+3*sigmahat;
+        cutoff = muhat+4*sigmahat;
         
         mynewlabels(data_fft_maxes >= cutoff) = ssclus+30;
         

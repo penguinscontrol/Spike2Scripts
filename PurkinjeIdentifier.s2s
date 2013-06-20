@@ -9,6 +9,7 @@ var asz% := fsz%/2+1; 'number of samples corresponding to amplitude of fft
 
 var ccode% := 31; 'code for complex spike
 var ssclus%; 'code for simple spikes
+var tailchan%; 'channel to hold the tsz long waveform after each simple spike
 
 var wavw% := SetResult(1,ssz,1,0,"Waveform", "samples", "V", "","",0);
 ChanTitle$(1,"Waveform");
@@ -46,11 +47,13 @@ ToolbarSet(0, "", dummy%);   'Idle routine
 ToolbarSet(1, "Next|0x21", nex%);   'Link to function
 ToolbarSet(2, "Prev|0x22", previ%);   'Link to function
 ToolbarSet(3,"Go to Time...", gototime%);
-ToolbarSet(4, "Mark as C|0x24", markasc%);
-ToolbarSet(5, "Mark as S|0x23", markass%);
-ToolbarSet(6, "Auto Find", autopurk%);
-ToolbarSet(7, "Clear CS tails", cleartails%);
-ToolbarSet(8, "Quit", quit%);
+ToolbarSet(5, "Mark as C|0x24", markasc%);
+ToolbarSet(6, "Mark as S|0x23", markass%);
+ToolbarSet(8, "FFT Find", autopurk%);
+ToolbarSet(10, "Copy tails 2 spikes", copytails%);
+ToolbarSet(11, "Clear CS tails", cleartails%);
+ToolbarSet(12, "Get tails", gettails%);
+ToolbarSet(14, "Quit", quit%);
 return Toolbar("Let's find a Purkinje cell", 511);
 MarkMask(wvmrkch%,0,1,-1);
 end
@@ -115,7 +118,6 @@ MatLabOpen(1); 'Open a connection to Matlab
 
 var code%[4],wvfrm[samps%];
 var cur[ssz];
-var fft[asz%]; 
 
 t := -1;
 
@@ -196,20 +198,65 @@ DlgButton(1,"OK");
 ok% := DlgShow(ssc%,ccc%,tl);
 
 MarkMask(wvmrkch%,0,0,-1);
-MarkMask(wvmrkch%,0,1,ccode%);
+MarkMask(wvmrkch%,0,1,ccc%);
 t:= -1;
 
 var code%[4],wvfrm[samps%];
-var nextt := -1;
 
 repeat 'if a complex spike has a simple spike in its tail, mark the ss as zero
     t := NextTime(wvmrkch%,t,code%,wvfrm[]);
-    MarkMask(wvmrkch%,0,1,ssclus%);
-    nextt := NextTime(wvmrkch%,t,code%,wvfrm[]);
-    MarkSet(wvmrkch%,t+Binsize(1),t+tl, 0,-1,-1,-1);
-    MarkMask(wvmrkch%,0,0,ssclus%);
+    MarkMask(wvmrkch%,0,1,ssc%);
+    MarkSet(wvmrkch%,t+Binsize(1),t+tl/1000, 0,-1,-1,-1);
+    MarkMask(wvmrkch%,0,0,ssc%);
 until t = -1;
 
+return 1
+end
+
+func gettails%()
+
+View(fftvw%).WindowVisible(0);
+View(wavw%).WindowVisible(0);
+
+var code%[4],wvfrm[samps%];
+var cur[ssz];
+
+var res := 64; 'downsample to this many data points
+var n := floor(ssz/64); 'keep every n points
+var downcur[res];
+var j,k;
+
+t := -1;
+
+View(timevw%);
+tailchan% := MemChan(6,res,n*BinSize(1),res/2);
+
+var i%;
+for i% := 1 to wcnt% do
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    View(timevw%).ChanData(1,cur[],t+samps%*BinSize(1),MaxTime());
+    
+    for j := 0 to (res-1) do
+        downcur[j] := cur[k];
+        k += n;
+    next;
+    k := 0;
+    
+    MemSetItem(tailchan%,0,t,code%,downcur[]);        
+next;
+ChanShow(tailchan%);
+return 1
+end
+
+func copytails%()
+if tailchan% <> 0 then
+var code%[4],wvfrm[samps%];
+t := -1;
+repeat
+    t := NextTime(tailchan%,t,code%,wvfrm[]);
+    MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);    
+until t = -1;
+endif;
 return 1
 end
 
