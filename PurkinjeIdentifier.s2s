@@ -290,23 +290,3 @@ MarkSet(wvmrkch%,t-Binsize(1),t+Binsize(1), ssclus%,-1,-1,-1);
 Draw(t, 3*tsz);
 return 1
 end
-
-func findpwof2(in)
-var n%;
-while in >1 do
-    in := in/2;
-    n% += 1;
-wend
-return n%-1;
-
-end
-
-func IntChoose(title$,msg$,lim)
-var ok%,int0%;
-DlgCreate(title$);
-DlgInteger(1,msg$,0,lim);
-DlgButton(0,"Cancel");
-DlgButton(1,"OK");
-ok% := DlgShow(int0%);
-return int0%
-end

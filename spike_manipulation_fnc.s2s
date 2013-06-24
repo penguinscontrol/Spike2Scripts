@@ -1,7 +1,7 @@
 var samps% := 32; 'how many samples per waveform?
 var wcnt%; 'Count waveforms
 var wvmrkch%; 'wavemark channel identifier
-
+var codescnt%;   'how many clusters
 var timevw%, tempinthvw%, myinthvw%, myavgvw%,tempavgvw%;
 
 func countwaves(ch%) 'counts the waves in a wavemark
@@ -92,7 +92,7 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
     case opt% = 1 then View(SSHdl%).SSTempSizeGet(start%,show%,pre%); 'number of points in raw data display
         out := show%;
         
-    case opt% = 2 then; 'number of clusters
+    case opt% = 2 then 'number of clusters
         var i%;
         View(ViewLink());
         for i%:=0 to 255 do
@@ -103,6 +103,8 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
             endif;
         next;
         MarkMask(ch%,0,1,-1);
+    else
+        ;
     endcase;       
 else
     PrintLog("Unsuitable Channel!\n");

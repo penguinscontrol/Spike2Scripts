@@ -48,6 +48,5 @@ view(2);
 axis off;
 axis([0,trange(end),vrange(1),vrange(end)]);
 set(gcf,'Color','Black');
-set(0,'DefaultFigureColor','Black');
 set(gca,'Color','Black');
 grid off;
