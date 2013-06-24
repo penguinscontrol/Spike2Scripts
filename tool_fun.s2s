@@ -19,8 +19,10 @@ end;
 
 func WvmrkChoose()
 var wavesch%,ok%;
+
 DlgCreate("Channel Selection");  'Start new dialog
 DlgChan(1,"Please indicate WaveMark channel",131088);
+
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(wavesch%);    'ok% is 0 if user cancels,  variables updated if not
@@ -258,30 +260,47 @@ ChanDelete(tmphold%);
 return 1
 end
 
-func totrain%()
-sendfeats();
+func savefeats%()
+
+wvmrkch% := WvmrkChoose();  'Wavemark Channel
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2);
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+var thisname$ := FileName$(3)+FileName$(4);
+
+var temppath$ := FilePath$(0);
+FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
 
 MatlabOpen(1);
 MatlabEval("clear;clc;");
-MatlabEval("data_prep;");
+
+var i%;
+for i% := 1 to codescnt% do
+    sendfeats(i%);
+    MatlabEval("cl_"+Str$(i%)+" = data_prep;");
+next;
+docase
+case Left$(thisname$,1) = "R" then
+    MatlabEval("cd('E:\\Spike_Sorting\\Rigel\\Features\\');");
+case Left$(thisname$,1) = "S" then
+    MatlabEval("cd('E:\\Spike_Sorting\\Sixx\\Features\\');");
+case Left$(thisname$,1) = "H" then
+    MatlabEval("cd('E:\\Spike_Sorting\\Hilda\\Features\\');");
+endcase;
+
+MatlabEval("save('"+thisname$+"');");
 
 MatlabClose();
 return 1
 end
 
-proc sendfeats()
+func sendfeats(curclus%)
 
-wvmrkch% := WvmrkChoose();  'Wavemark Channel
-samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
-codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'How many samples per spike?
-wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
-
-var curclus% := IntChoose("Cell type classifier","Please select a cluster to classify",codescnt%);
 View(timevw%);
 MarkMask(wvmrkch%,0,0,-1);
 MarkMask(wvmrkch%,0,1,curclus%);
-var temppath$ := FilePath$(0);
-FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
+
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+
 
 'INTH settings
 var binsz := 0.00025;  'How big the bin is, in s
@@ -319,7 +338,7 @@ var trigch% := IntChoose("Trigger Extractor","Which channel has the triggers?",6
 IIRCreate(-1, 1, 0, 4, 1000); 'IIR High pass Butterworth 1 kHz, fourth order
 var filttrigch% := IIRApply(-1, 0, trigch%, 0.000000, MaxTime(), 1); 'Apply created filter to a new channel
 ChanShow(filttrigch%);
-
+View(timevw%);
 var newmark% := SSOpen(2,1);
 SSChan(filttrigch%); Draw();
 SSTempSizeSet(8,8,16,0); 'First number: how many samples right of the first one; Second number: how many samples in template? Third: How many samples in window; Fourth: How far into the window is 0

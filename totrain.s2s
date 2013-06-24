@@ -1,0 +1,45 @@
+#include "tool_fun.s2s"
+
+var ok%, catchoice%, curclus%;
+var categories$[3];
+categories$[0] := "Golgi";
+categories$[1] := "Purkinje";
+categories$[2] := "Fiber";
+
+var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
+var thisname$ := FileName$(3)+FileName$(4);
+MatlabOpen(1);
+MatlabEval("clear;clc;");
+
+
+repeat
+    DlgCreate("Assign to Training Set");
+    DlgChan(1,"Please indicate Wavemark Channel",131088);
+    DlgInteger(2, "Which cluster is it in?",1,1024);
+    DlgList(3,"Which type of cell is this?",categories$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    DlgButton(2,"Next");
+
+    ok% := DlgShow(wvmrkch%, curclus%, catchoice%);
+    
+
+    if ChanKind(wvmrkch%) = 6 then 'if ch% is a wavemark
+        PrintLog("You have selected channel ", wvmrkch%, " for training set.\n");
+    else
+        PrintLog("Unsuitable channel!\n");
+        halt;
+    endif;
+    
+    if ok% = 0 then halt; endif;
+    
+    sendfeats(curclus%);
+    MatlabEval("cl_"+Str$(curclus%)+" = data_prep;");
+    MatlabEval("cl_"+Str$(curclus%)+".label = '"+categories$[catchoice%]+"'");
+    
+until ok% = 1;
+
+MatlabEval("cd('"+githubpath$+"Spike2Scripts\\Cell_Identifier\\training_set\\');");
+MatlabEval("save('"+thisname$+"');");
+
+MatlabClose();
