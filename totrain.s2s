@@ -1,10 +1,11 @@
 #include "tool_fun.s2s"
 
 var ok%, catchoice%, curclus%;
-var categories$[3];
+var categories$[4];
 categories$[0] := "Golgi";
 categories$[1] := "Purkinje";
 categories$[2] := "Fiber";
+categories$[3] := "Dentate";
 
 var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
 var thisname$ := FileName$(3)+FileName$(4);
