@@ -6,6 +6,14 @@ var timevw%, tempinthvw%, myinthvw%, myavgvw%,tempavgvw%;
 var ssdir$ := "E:\\Spike_Sorting\\";
 var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
 
+MatlabOpen(1);
+MatlabEval("clear;");
+MatlabEval("getuserinfo;");
+MatLabGet("githubdirectory",githubpath$);
+MatlabGet("directory",ssdir$);
+MatlabClose();
+
+
 func countwaves(ch%) 'counts the waves in a wavemark
 var t:= -1, n:=0;
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark

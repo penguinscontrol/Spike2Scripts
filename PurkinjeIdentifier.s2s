@@ -182,6 +182,9 @@ until t = -1;
              
 MatLabClose();
 ChanDelete(tmphold%);
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,ssclus%);
+MarkMask(wvmrkch%,0,1,ccode%);
 return 1
 end
 
@@ -214,6 +217,10 @@ end
 
 func gettails%()
 
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,ssclus%);
+MarkMask(wvmrkch%,0,1,ccode%);
+
 View(fftvw%).WindowVisible(0);
 View(wavw%).WindowVisible(0);
 
@@ -231,7 +238,7 @@ View(timevw%);
 tailchan% := MemChan(6,res,n*BinSize(wvmrkch%),res/2);
 
 var i%;
-for i% := 1 to wcnt% do
+repeat
     t := NextTime(wvmrkch%,t,code%,wvfrm[]);
     View(timevw%).ChanData(1,cur[],t+samps%*BinSize(1),MaxTime());
     
@@ -242,7 +249,7 @@ for i% := 1 to wcnt% do
     k := 0;
     
     MemSetItem(tailchan%,0,t,code%,downcur[]);        
-next;
+until t = -1;
 ChanShow(tailchan%);
 return 1
 end

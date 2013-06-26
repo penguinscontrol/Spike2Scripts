@@ -170,6 +170,7 @@ var amps[wcnt%]; 'save amplitudes to variable amps
 View(timevw%).extractFeatWave(wavesch%,amps[],1);
 ArrSum(amps[],sig,ampstd);
 Message("SNR is ", sig/thres);
+ChanDelete(filtered%);
 return 1
 
 end
@@ -292,7 +293,7 @@ ok% := MatlabEval("noise_est = double(noise_est);");
 var i%;
 for i% := 1 to codescnt% do
     sendfeats(i%);
-    MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est);");
+    ok% := MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est);");
 next;
 docase
 case Left$(thisname$,1) = "R" then
