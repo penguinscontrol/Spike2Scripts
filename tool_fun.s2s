@@ -247,10 +247,10 @@ for i% := 1 to wcnt% do
 next;
 
 ExportChanList(0, MaxTime(),tmphold%);
-FileSaveAs("E:\\Spike_Sorting\\spike2temp\\for3Ddraw.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+FileSaveAs(ssdir$+"spike2temp\\for3Ddraw.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
 
 var temppath$ := FilePath$(0);
-FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
+FilePathSet(ssdir$+"spike2temp\\",0);
 
 MatLabEval("spike2_shape_heat_map;");
 Message("Click to continue...");
@@ -281,7 +281,7 @@ samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike
 var thisname$ := FileName$(3)+FileName$(4);
 
 var temppath$ := FilePath$(0);
-FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
+FilePathSet(ssdir$+"spike2temp\\",0);
 
 MatlabOpen(1);
 MatlabShow(1);
@@ -296,11 +296,11 @@ for i% := 1 to codescnt% do
 next;
 docase
 case Left$(thisname$,1) = "R" then
-    MatlabEval("cd('E:\\Spike_Sorting\\Rigel\\Features\\');");
+    MatlabEval("cd('"+ssdir$+"Rigel\\Features\\');");
 case Left$(thisname$,1) = "S" then
-    MatlabEval("cd('E:\\Spike_Sorting\\Sixx\\Features\\');");
+    MatlabEval("cd('"+ssdir$+"Sixx\\Features\\');");
 case Left$(thisname$,1) = "H" then
-    MatlabEval("cd('E:\\Spike_Sorting\\Hilda\\Features\\');");
+    MatlabEval("cd('"+ssdir$+"Hilda\\Features\\');");
 endcase;
 
 MatlabEval("save('"+thisname$+"');");
@@ -328,7 +328,7 @@ MarkMask(wvmrkch%,0,1,curclus%);
 
 'Waveforms
 ExportChanList(0, MaxTime(),wvmrkch%);
-FileSaveAs("E:\\Spike_Sorting\\spike2temp\\holdwaves.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+FileSaveAs(ssdir$+"spike2temp\\holdwaves.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
 
 'Measurements
 'var tmphold% := MemChan(7,1);
@@ -433,17 +433,15 @@ else
     subj$ := subjects$[subchoice%];   
 endcase;
 
-var directory$ :=  "E:\\Spike_Sorting\\";
-
 View(timevw%);
 MarkMask(wvmrkch%,0,1,-1);
 ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),wvmrkch%);
-FileSaveAs(directory$+subj$+"\\Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,
 "UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
 ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),trch%);
-FileSaveAs(directory$+subj$+"\\Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,
 "UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
 
 return 1

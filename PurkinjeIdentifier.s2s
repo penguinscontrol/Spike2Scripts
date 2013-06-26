@@ -134,15 +134,14 @@ for i% := 1 to wcnt% do
 next;
 
 ExportChanList(0, MaxTime(),tmphold%);
-FileSaveAs("E:\\Spike_Sorting\\spike2temp\\postss.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+FileSaveAs(ssdir$+"spike2temp\\postss.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
 
 var temppath$ := FilePath$(0);
-FilePathSet("E:\\Spike_Sorting\\spike2temp\\",0);
+FilePathSet(ssdir$+"spike2temp\\",0);
 
 ok% := MatLabPut("timelength",View(timevw%).MaxTime());
 ok% := MatLabPut("ssclus",ssclus%);
 ok% := MatLabPut("tsamp",View(timevw%).Binsize());
-MatLabEval("dbstop in PurkinjeIdentifier at 36;");
 MatLabEval("PurkinjeIdentifier;");
 var newlabels[wcnt%];
 ok% := MatLabGet("mynewlabels",newlabels[]);

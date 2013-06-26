@@ -3,6 +3,8 @@ var wcnt%; 'Count waveforms
 var wvmrkch%; 'wavemark channel identifier
 var codescnt%;   'how many clusters
 var timevw%, tempinthvw%, myinthvw%, myavgvw%,tempavgvw%;
+var ssdir$ := "E:\\Spike_Sorting\\";
+var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
 
 func countwaves(ch%) 'counts the waves in a wavemark
 var t:= -1, n:=0;

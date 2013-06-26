@@ -7,7 +7,6 @@ categories$[1] := "Purkinje";
 categories$[2] := "Fiber";
 categories$[3] := "Dentate";
 
-var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
 var thisname$ := FileName$(3)+FileName$(4);
 MatlabOpen(1);
 MatlabEval("clear;clc;");
