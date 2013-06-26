@@ -11,10 +11,11 @@ classdef unit
         mini
         pk2pk
         wid
-        inth_kurt
-        inth_skew
-        inth_std
-        inth_bar
+        isi_kurt
+        isi_skew
+        isi_std
+        isi_bar
+        isi_med
         depth
         lm
         ap
@@ -32,16 +33,17 @@ classdef unit
             ThisUnit.label = lbl;
         end
                 
-        function NewUnit = unit(label,maxi,mini,pk2pk,wid,inth_kurt,inth_skew,inth_std,inth_bar,depth,lm,ap)
+        function NewUnit = unit(label,maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,depth,lm,ap)
                 NewUnit.label = label;
                 NewUnit.maxi = maxi;
                 NewUnit.mini = mini;
                 NewUnit.pk2pk = pk2pk;
                 NewUnit.wid = wid;
-                NewUnit.inth_kurt = inth_kurt;
-                NewUnit.inth_skew = inth_skew;
-                NewUnit.inth_std = inth_std;
-                NewUnit.inth_bar = inth_bar;
+                NewUnit.isi_kurt = isi_kurt;
+                NewUnit.isi_skew = isi_skew;
+                NewUnit.isi_std = isi_std;
+                NewUnit.isi_bar = isi_bar;
+                NewUnit.isi_med = isi_med;
                 NewUnit.depth = depth;
                 NewUnit.lm = lm;
                 NewUnit.ap = ap;

@@ -1,28 +1,60 @@
-function out = data_prep()
+function out = data_prep(noise_est)
 
 cd('E:\\Spike_Sorting\\spike2temp\\');
 
-% Variables from Spike2, uncomment for debugging
-
-load('holdINTH.mat'); % post simple spike data
-tn1 = whos; % temporary name holder
-tn2 = tn1.name;
-eval(['inth = ', tn2,';']); % get data as a struct
-clearvars -except inth newname
+% load('holdisi.mat'); % post simple spike data
+% tn1 = whos; % temporary name holder
+% tn2 = tn1.name;
+% eval(['isi = ', tn2,';']); % get data as a struct
+% clearvars -except isi newname
 
 load('holdwaves.mat');
 tn1 = whos; % temporary name holder
 tn2 = tn1.name;
 eval(['waves = ', tn2,';']); % get data as a struct
 [subj, coord, depth] = extract_info(tn2);
-clearvars -except inth waves subj coord depth newname
+clearvars -except waves subj coord depth noise_est
 
-inth_kurt = kurtosis(inth.values);
-inth_skew = skewness(inth.values);
-inth_std = std(inth.values);
-inth_bar = mean(inth.values);
+isi = diff(waves.times);
+isi_kurt = kurtosis(isi);
+isi_skew = skewness(isi);
+isi_std = std(isi);
+isi_bar = mean(isi);
+isi_med = median(isi);
 
-[mini, maxi, pk2pk, wid] = get_wave_feat(waves);
+mu = mean(waves.values);
+[pks,pklocs] = findpeaks(mu);
+[trs,trlocs] = findpeaks(-mu);
+maxi = max(pks);
+mini = -max(trs);
+pk2pk = maxi-mini;
 
-out = unit('unclassified',mean(maxi),mean(mini),mean(pk2pk),mean(wid),inth_kurt,inth_skew,inth_std,inth_bar,depth,coord.lm,coord.ap);
+htlim = 0.1*pk2pk; %minimum height for a peak/trough
+
+[pks,pklocs] = findpeaks(mu,'minpeakheight',htlim);
+[trs,trlocs] = findpeaks(-mu,'minpeakheight',htlim);
+% if maxiidx < miniidx
+%     beginx = find(mu>noise_est); beginx = beginx(1);
+%     endx = find(mu<-noise_est); endx = endx(end);
+%     wid = (endx-beginx).*waves.interval;
+% else
+%     beginx = find(mu<-noise_est); beginx = beginx(1);
+%     endx = find(mu>noise_est); endx = endx(end);
+%     wid = (endx-beginx).*waves.interval;
+% end
+
+ptlocs = sort([pklocs,trlocs]);
+if ismember(ptlocs(1),pklocs)
+    beginx = find(mu>htlim); beginx = beginx(1);
+else
+    beginx = find(mu<-htlim); beginx = beginx(1);
+end
+if ismember(ptlocs(end),pklocs)
+    endx = find(mu>htlim); endx = endx(end);
+else
+    endx = find(mu<-htlim); endx = endx(end);
+end
+wid = (endx-beginx).*waves.interval;
+    
+out = unit('unclassified',maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,depth,coord.lm,coord.ap);
 end

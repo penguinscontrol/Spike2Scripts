@@ -229,7 +229,7 @@ var j,k;
 t := -1;
 
 View(timevw%);
-tailchan% := MemChan(6,res,n*BinSize(1),res/2);
+tailchan% := MemChan(6,res,n*BinSize(wvmrkch%),res/2);
 
 var i%;
 for i% := 1 to wcnt% do

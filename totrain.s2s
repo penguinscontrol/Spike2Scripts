@@ -1,6 +1,6 @@
 #include "tool_fun.s2s"
 
-var ok%, catchoice%, curclus%;
+var catchoice%, curclus%;
 var categories$[4];
 categories$[0] := "Golgi";
 categories$[1] := "Purkinje";
@@ -12,6 +12,17 @@ var thisname$ := FileName$(3)+FileName$(4);
 MatlabOpen(1);
 MatlabEval("clear;clc;");
 
+var noise;
+View(timevw%);
+var ok%,vtrch%;
+DlgCreate("Assign to Training Set");
+DlgChan(1,"Please indicate Voltage Trace",131585);
+ok% := DlgShow(vtrch%);
+
+var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
+noise := getnoise(filtered%);
+ChanDelete(filtered%);
+MatlabPut("noise_est",noise);
 
 repeat
     DlgCreate("Assign to Training Set");
@@ -23,7 +34,7 @@ repeat
     DlgButton(2,"Next");
 
     ok% := DlgShow(wvmrkch%, curclus%, catchoice%);
-    
+    if ok% = 0 then halt; endif;
 
     if ChanKind(wvmrkch%) = 6 then 'if ch% is a wavemark
         PrintLog("You have selected channel ", wvmrkch%, " for training set.\n");
@@ -32,13 +43,15 @@ repeat
         halt;
     endif;
     
-    if ok% = 0 then halt; endif;
+   
     
     sendfeats(curclus%);
-    MatlabEval("cl_"+Str$(curclus%)+" = data_prep;");
+    MatlabEval("cl_"+Str$(curclus%)+" = data_prep(noise_est);");
     MatlabEval("cl_"+Str$(curclus%)+".label = '"+categories$[catchoice%]+"'");
     
 until ok% = 1;
+
+    
 
 MatlabEval("cd('"+githubpath$+"Spike2Scripts\\Cell_Identifier\\training_set\\');");
 MatlabEval("save('"+thisname$+"');");
