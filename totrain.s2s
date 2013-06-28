@@ -45,8 +45,9 @@ repeat
    
     
     sendfeats(curclus%);
-    MatlabEval("cl_"+Str$(curclus%)+" = data_prep(noise_est);");
+    MatlabEval("cl_"+Str$(curclus%)+" = data_prep(noise_est,1);");
     MatlabEval("cl_"+Str$(curclus%)+".label = '"+categories$[catchoice%]+"'");
+    Message("Click to continue...");
     
 until ok% = 1;
 

@@ -11,14 +11,17 @@
 '
 ' 26/Jul/2012 TDB   First version produced by tidying existing scripts
 
-const spec$ := "R122*.bin";                                 ' The filename spec used to select files
+#include "tool_fun.s2s"
 
+const spec$ := "R143*.smr";                                 ' The filename spec used to select files
+var currentpath$;
 main();
 halt;
 
 proc main()                                             ' All code in a function so name$ not global
 var err%;                                               ' Useful variable to hold errors
 err% := FilePathSet("", 0, "Folder to process");        ' Select the folder to use
+currentpath$ := FilePath$();
 if (err% < 0) then                                      ' If folder is cancelled or bad somehow
     Message("Folder selection failed");                 ' Give a message
     halt;                                               ' and quit
@@ -35,21 +38,23 @@ var name$[num%];                                        ' Set size of array to h
 Filelist(Name$[], -1, spec$);                           ' Get the names into the array
 var i%;
 for i% := 0 to num%-1 do
-    ImportFile%(name$[i%]);                             ' do the import for this file
+    GetFeats%(name$[i%]);                             ' do the import for this file
 next;
 end
 
 ' A function to import a single file & log how it went
-Func ImportFile%(file$);
-var ok%;
-PrintLog("Importing file %s: ", file$);                 ' Log what we are doing
-FileConvert$(file$, "", 0, ok%);                        ' Try to import the file
-if (ok% < 0) then                                       ' Say how we did
-    PrintLog("import failed, error %d (%s)\n", ok%, error$(ok%));
+Func GetFeats%(file$);
+FilePathSet(currentpath$);
+timevw% := FileOpen(file$,0);
+WindowVisible(1);
+savefeats%();
+
+if (timevw% < 0) then                                       ' Say how we did
+    PrintLog("import failed, error %d (%s)\n", timevw%, error$(timevw%));
 else
     PrintLog(file$);
     PrintLog("import successfull\n");
-    'FileClose();                                        ' Close the file
+    View(timevw%);FileClose();                                        ' Close the file
 endif;
-return ok%;                                             ' and we are done
+return timevw%;                                             ' and we are done
 end

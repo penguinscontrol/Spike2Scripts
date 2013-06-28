@@ -293,7 +293,8 @@ ok% := MatlabEval("noise_est = double(noise_est);");
 var i%;
 for i% := 1 to codescnt% do
     sendfeats(i%);
-    ok% := MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est);");
+    ok% := MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est,1);");
+    Message("Click to continue...");
 next;
 docase
 case Left$(thisname$,1) = "R" then

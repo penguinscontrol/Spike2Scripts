@@ -16,6 +16,8 @@ classdef unit
         isi_std
         isi_bar
         isi_med
+        isi_cv
+        med_cv2
         depth
         lm
         ap
@@ -33,7 +35,7 @@ classdef unit
             ThisUnit.label = lbl;
         end
                 
-        function NewUnit = unit(label,maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,depth,lm,ap)
+        function NewUnit = unit(label,maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,isi_cv,med_cv2,depth,lm,ap)
                 NewUnit.label = label;
                 NewUnit.maxi = maxi;
                 NewUnit.mini = mini;
@@ -44,6 +46,8 @@ classdef unit
                 NewUnit.isi_std = isi_std;
                 NewUnit.isi_bar = isi_bar;
                 NewUnit.isi_med = isi_med;
+                NewUnit.isi_cv = isi_cv;
+                NewUnit.med_cv2 = med_cv2;
                 NewUnit.depth = depth;
                 NewUnit.lm = lm;
                 NewUnit.ap = ap;
