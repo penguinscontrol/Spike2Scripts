@@ -43,6 +43,7 @@ next;
 
 View(textvw%);
 FileSaveAs("comments_"+Date$(2,2,1,0,"_")+".txt",1,0);
+FileClose();
 end
 
 ' A function to import a single file & log how it went
