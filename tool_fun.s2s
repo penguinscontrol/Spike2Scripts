@@ -289,6 +289,16 @@ MatlabShow(1);
 MatlabEval("clear;clc;");
 ok% := MatlabPut("noise_est",noise);
 ok% := MatlabEval("noise_est = double(noise_est);");
+ok% := MatlabEval("global act_name;");
+
+if Left$(thisname$,1) <> "R" or Left$(thisname$,1) <> "S" or Left$(thisname$,1) <> "H" then
+    var initial$;
+    DlgCreate("Features 2 Matlab");
+    DlgString(1,"Please indicate subject initial: ",1);
+    DlgShow(initial$);
+    thisname$ := initial$+thisname$;
+    ok% := MatlabPut("act_name",initial$);
+endif;
 
 var i%;
 for i% := 1 to codescnt% do

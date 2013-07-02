@@ -97,7 +97,13 @@ func getWavemarkInfo(ch%,opt%)
 var start%, show%, pre%, out, SSHdl%;
 if ChanKind(ch%) = 6 then 'if ch% is a wavemark
     ChanSelect(ch%,1);
-    SSHdl% := SSOpen(1,0);
+    if SSopen(0) then
+        View(SSopen(0));FileClose();View(timevw%);
+        SSHdl% := SSOpen(1,0);
+    else
+        SSHdl% := SSOpen(1,0);
+    endif;
+    
     docase
     case opt% = 1 then View(SSHdl%).SSTempSizeGet(start%,show%,pre%); 'number of points in raw data display
         out := show%;

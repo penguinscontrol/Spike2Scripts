@@ -1,5 +1,6 @@
 function out = data_prep(noise_est, plotting)
 
+global act_name;
 cd('E:\\Spike_Sorting\\spike2temp\\');
 
 % load('holdisi.mat'); % post simple spike data
@@ -13,6 +14,9 @@ tn1 = whos; % temporary name holder
 tn2 = tn1.name;
 eval(['waves = ', tn2,';']); % get data as a struct
 [subj, coord, depth] = extract_info(tn2);
+if ~isempty(act_name)
+    subj = act_name;
+end
 clearvars -except waves subj coord depth noise_est tn2 plotting
 
 isi = diff(waves.times);

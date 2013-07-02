@@ -2,9 +2,9 @@ function [subj, coord, depth] = extract_info(in)
 %extract_info
 %Gets information about the coordinates of a recording from the filename
 subj = in(1);
-if ~ismember('RSH',in)
-    subj = input('Please input subject name','s');
-end
+%if ~ismember('RSH',in)
+%    subj = input('Please input subject name','s');
+%end
 
 coord = struct('lm',0,'ap',0);
 [si,ei] = regexp(in,'_\w*_');

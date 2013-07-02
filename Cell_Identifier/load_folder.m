@@ -8,6 +8,7 @@ tset = cell(nofiles,1);
 c = 1;
 for a = 1:nofiles
     cur = load(tsetls(a,:));
+    if isstruct(cur)
     names = fieldnames(cur);
     [noclus, ~] = size(names);
     for b = 1:noclus
@@ -15,6 +16,7 @@ for a = 1:nofiles
             eval(['tset{', num2str(c),'}= cur.', names{b},';']);
             c = c+1;
         end
-    end        
+    end
+    end
 end
 end

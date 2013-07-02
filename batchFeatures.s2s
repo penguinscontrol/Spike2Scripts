@@ -13,7 +13,7 @@
 
 #include "tool_fun.s2s"
 
-const spec$ := "R168*.smr";                                 ' The filename spec used to select files
+const spec$ := "*.smr";                                 ' The filename spec used to select files
 var currentpath$;
 main();
 halt;
