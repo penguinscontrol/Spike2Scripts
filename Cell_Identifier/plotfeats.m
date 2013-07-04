@@ -69,6 +69,7 @@ if isprop(units{1,1},feat1)&&isprop(units{1,1},feat2)
     
     ha = zeros(1,5);
     for a = 1:r
+        if ~isempty(units{a})
         switch units{a}.label
             case 'unclassified'
                 if ha(1) == 0
@@ -100,7 +101,8 @@ if isprop(units{1,1},feat1)&&isprop(units{1,1},feat2)
                 else
                     plot(units{a}.(feat1),units{a}.(feat2),'m+');
                 end           
-        end        
+        end
+        end
     end
     xlabel(feat1);
     ylabel(feat2);

@@ -291,8 +291,9 @@ ok% := MatlabPut("noise_est",noise);
 ok% := MatlabEval("noise_est = double(noise_est);");
 ok% := MatlabEval("global act_name;");
 
-if Left$(thisname$,1) <> "R" or Left$(thisname$,1) <> "S" or Left$(thisname$,1) <> "H" then
-    var initial$;
+var initial$ := Left$(thisname$,1);
+if initial$ <> "R" and initial$ <> "S" and initial$ <> "H" then
+    
     DlgCreate("Features 2 Matlab");
     DlgString(1,"Please indicate subject initial: ",1);
     DlgShow(initial$);

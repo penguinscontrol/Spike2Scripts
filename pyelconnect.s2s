@@ -1,0 +1,53 @@
+var ap, ml, dp;
+var txtfilepath$ := "C:\\Users\\Radu\\Documents\\GitHub\\Spike2Scripts\\sp2pyelcoords.txt";
+var txtvw%;
+var ok%;
+
+main();
+halt;
+
+func main()
+
+ToolbarClear();
+ToolbarSet(3, "AP", setAP%);
+ToolbarSet(2, "ML", setML%);
+ToolbarSet(1, "Depth", setDP%);
+ToolbarSet(14, "Quit", quit%);
+
+return Toolbar("Pyelectrode Connect", 1023);
+
+end
+
+func setAP%()
+DlgCreate("Set AP");
+DlgReal(1,"Please select grid AP position:",-100,100);
+DlgShow(ap);
+updatechanges();
+return 1
+end
+
+func setML%()
+DlgCreate("Set ML");
+DlgReal(1,"Please select grid ML position:",-100,100);
+DlgShow(ml);
+updatechanges();
+return 1
+end
+
+func setDP%()
+DlgCreate("Set DP");
+DlgReal(1,"Please select depth:",0,100000);
+DlgShow(dp);
+updatechanges();
+return 1
+end
+
+proc updatechanges()
+txtvw% := FileOpen(txtfilepath$,8,1);
+Print(Str$(ap)+"\t"+Str$(ml)+"\t"+Str$(dp));
+FileClose(0,-1);
+end
+
+func quit%()
+return 0
+end

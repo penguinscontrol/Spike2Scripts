@@ -36,7 +36,7 @@ from pickle import dump, load, HIGHEST_PROTOCOL
 from sys import argv, platform
 from os import sep, listdir, path
 
-from PyQt4.QtCore import SIGNAL, QRect, Qt, QMetaObject, QObject
+from PyQt4.QtCore import SIGNAL, QRect, Qt, QMetaObject, QObject, QFileSystemWatcher, QFile, QIODevice
 from PyQt4.QtGui import QMainWindow, QApplication, QWidget, QGroupBox, QLabel, QSpinBox, QVBoxLayout, QDoubleSpinBox, QHBoxLayout, QCheckBox, QPushButton, QAction, QFileDialog, QInputDialog, QIcon, QMessageBox, QProgressBar, QStatusBar, QDialog, QDialogButtonBox, QFont, QTabWidget, QTextEdit,QComboBox
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -588,7 +588,11 @@ class Form(QMainWindow):
         self.setSp2Flag()
         self.setChamberFlags()
         self.setClipFlag()
-        
+	
+        self.fs_mon_path = 'C:\Users\Radu\Documents\GitHub\Spike2Scripts\sp2pyelcoords.txt'
+        self.fs_watcher = QFileSystemWatcher([self.fs_mon_path])
+        self.connect(self.fs_watcher, SIGNAL('fileChanged(QString)'), self.getSp2Coords)
+
         vbox = QVBoxLayout()
         vbox.addWidget(self.canvas)
         vbox.addWidget(self.mpl_toolbar)
@@ -803,9 +807,9 @@ class Form(QMainWindow):
         else:
             self.Sp2Coordinate.setEnabled(True)
             if self.AddSp2External.isChecked() is True:
-                self.Sp2MLPos.setEnabled(True)
-                self.Sp2APPos.setEnabled(True)
-                self.Sp2DPPos.setEnabled(True)
+		#self.Sp2MLPos.setEnabled(True)
+                #self.Sp2APPos.setEnabled(True)
+                #self.Sp2DPPos.setEnabled(True)
                 self.Sp2PlaneExternal.setEnabled(True)
                 self.Sp2PlaneCExternal.setEnabled(True)
                 #self.PlaneExternal.setEnabled(True)
@@ -831,7 +835,24 @@ class Form(QMainWindow):
                 self.plotData()
             
 #End Radu
+    
+    def getSp2Coords(self):
         
+        thefile = QFile(self.fs_mon_path)
+        thefile.open(QIODevice.ReadOnly)
+        thisdata = thefile.readData(256)
+        if isinstance(thisdata,str):
+            thisdata = thisdata.split('\t')
+            ap = float(thisdata[0])
+            ml = float(thisdata[1])
+            dp = float(thisdata[2])
+            self.Sp2APPos.setValue(ap)
+            self.Sp2MLPos.setValue(ml)
+            self.Sp2DPPos.setValue(dp)
+            self.plotData()
+        thefile.close()
+        
+    
     def setShowNeuronsFlags(self):
         if self.showNeuronsFlag is True:
             self.showNeuronsFlag = False
@@ -1100,9 +1121,6 @@ class Form(QMainWindow):
                     f = open(self.LogFile, 'w')
                     f.write('1. '+self.LogSTR+'\n')
                     f.close()
-        
-
-
 #End Radu        
     def getChamberSize(self):
         dlg = StartChamberDialog()
