@@ -7,16 +7,17 @@ Func toolz()    'Set your own name...
 timevw% := View();
 ToolbarClear();     'Remove any old buttons
 ToolbarSet(0, "", idlefun%);   'Idle routine
-ToolbarSet(1, "&PredictPCA", PredictPCA%);   'Link to function
-ToolbarSet(2, "INTH",MyINTH2%);
-ToolbarSet(3,"SNR",snrfromfile%);
-ToolbarSet(4,"Waveform",waveavg%);
-ToolbarSet(5,"3D",wave3D%);
-ToolbarSet(7,"Collision Detection",coldetect%);
-ToolbarSet(9, "REXDataGUI",gotogui%);
-ToolbarSet(10, "ToREXDataGUI",torex%);
-ToolbarSet(11,"Get Triggers",gettrigs%);
-ToolbarSet(13, "Feats2Mat",savefeats%);
-ToolbarSet(15, "Quit",quit%);
+ToolbarSet(1, "Quit",quit%);
+ToolbarSet(3, "&PredictPCA", PredictPCA%);   'Link to function
+ToolbarSet(4,"Collision Detection",coldetect%);
+ToolbarSet(6, "INTH",MyINTH2%);
+ToolbarSet(7,"SNR",snrfromfile%);
+ToolbarSet(8,"Waveform",waveavg%);
+ToolbarSet(9,"3D",wave3D%);
+ToolbarSet(11,"Add to PyEl", add2pyel%);
+ToolbarSet(12, "REXDataGUI",gotogui%);
+ToolbarSet(13, "ToREXDataGUI",torex%);
+ToolbarSet(14,"Get Triggers",gettrigs%);
+ToolbarSet(16, "Feats2Mat",savefeats%);
 return Toolbar("Things you can do", 511);
 end;

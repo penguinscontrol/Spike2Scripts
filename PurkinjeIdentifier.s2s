@@ -28,7 +28,7 @@ if not(CursorExists(2)) then
 endif;
 
 main();
-halt();
+halt;
 
 func main()
 wvmrkch% := WvmrkChoose();

@@ -5,7 +5,7 @@ var newmark%; 'view for the new wavemark
 var filtered%; 'Channel for filtered voltage trace
 
 var thres; 'Default spike detection threshold, waveclus style
-var stdmin := 4; var stdmax := 15; 'multipliers for wave_clus noise estimate
+var stdmin := 3; var stdmax := 10; 'multipliers for wave_clus noise estimate
 
 var sr := 40000; 'Sampling rate
 

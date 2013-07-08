@@ -1,0 +1,107 @@
+#include "tool_fun.s2s"
+timevw% := View();
+
+var ml,ap,dp;
+var thisname$ := FileName$(3)+FileName$(4)+".SMR";
+var initial$ := Left$(thisname$,1);
+
+if initial$ <> "R" and initial$ <> "S" and initial$ <> "H" then
+    DlgCreate("Features 2 Matlab");
+    DlgString(1,"Please indicate subject initial: ",1);
+    DlgShow(initial$);
+endif;
+
+var ok%;
+docase
+case initial$ = "R" then
+    ok% := FilePathSet(ssdir$+"Rigel\\",0);
+case initial$ = "S" then
+    ok% := FilePathSet(ssdir$+"Sixx\\",0);
+case initial$ = "H" then
+    ok% := FilePathSet(ssdir$+"Hilda\\",0);
+else
+    halt;
+endcase;
+
+var filevw% := FileOpen(initial$+"_"+"ExtElec"+".txt",2);
+var filevwlog% := FileOpen(initial$+"_"+"ExtElecLog"+".txt",2);
+
+MatLabOpen(1);
+MatlabShow(1);
+MatLabEval("cd("+FilePath$(0)+");");
+MatLabEval("clear;clc;");
+MatLabEval("[subj, coordlm, coordap, depth] = extract_info_pyel('"+thisname$+"');");
+MatlabGet("coordlm",ml);
+MatlabGet("coordap",ap);
+MatlabGet("depth",dp);
+MatlabClose();
+
+var lastnrn%,allelse$;
+var cntnr%;
+
+View(filevwlog%);
+ReadSetup(".","","","");
+
+while Read(lastnrn%,allelse$)>0 do
+wend;
+var caretpos% := MoveBy(0,0);
+
+ReadSetup();
+View(filevw%);MoveTo(0,0,caretpos%);
+
+cntnr% := lastnrn%+1;
+
+View(timevw%);
+var howmany%[2];
+ChanList(howmany%[],16);
+
+if howmany%[0] = 1 then
+    wvmrkch% := howmany%[1];
+else
+    wvmrkch% := WvmrkChoose();
+endif;
+
+var numcl := getWavemarkInfo(wvmrkch%,2);
+var class1%,class2%;
+DlgCreate("Classifications");  'Start new dialog
+DlgInteger(1,"Please indicate Classifier 1",0,32);
+DlgInteger(2,"Please indicate Classifier 2",0,32);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(class1%,class2%);    'ok% is 0 if user cancels,  variables updated if not
+
+var j%;
+for j%:= 1 to numcl do
+        
+    ' write neuron coordinates
+    
+    View(filevw%).Print(Str$(class1%)+" "); 'classifications
+    View(filevw%).Print(Str$(class2%)+" ");
+
+    View(filevw%).Print(Str$(ml)+" "); 'coordinates
+    View(filevw%).Print(Str$(ap)+" ");
+    View(filevw%).Print(Str$(dp)+" ");
+    View(filevw%).Print(Str$(cntnr%)); ' current neuron
+    
+    View(filevw%).Print("\n");
+    
+    'write comments
+    
+    View(filevwlog%).Print(Str$(cntnr%)+". ");
+    View(filevwlog%).Print(thisname$+" ;");
+    var k%;
+    for k% := 1 to 5 do
+        View(filevwlog%).Print(View(timevw%).FileComment$(k%)+"  ;");
+    next;
+    View(filevwlog%).Print("\n");
+    cntnr% += 1;
+next;
+
+
+View(filevw%);
+FileSave();
+FileClose();
+View(filevwlog%);
+FileSave();
+FileClose();
+View(timevw%);FileClose();

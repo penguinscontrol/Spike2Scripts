@@ -1,0 +1,120 @@
+'$BatchImport.s2s|Script to perform batch import of files
+'
+' Written by CED to provide a generally useful batch importer
+' Alter the spec$ constant below to change the file type that
+'  is imported - note this importer will attempt to import all
+'  files in a folder matching this specification - so it is not
+'  generally useful with some imported file types where multiple
+'  files are used to hold the data from one experiment.
+'
+' Revision history:
+'
+' 26/Jul/2012 TDB   First version produced by tidying existing scripts
+#include "tool_fun.s2s"
+
+const spec$ := "*.smr";                                 ' The filename spec used to select files
+var textvw1% := FileNew(1);
+var textvw2% := FileNew(1);
+var subj$,ml,ap,dp;
+var cntnr% := 1; 'counter for neurons
+var ok%;
+main();
+halt;
+
+proc main()                                             ' All code in a function so name$ not global
+var err%;                                               ' Useful variable to hold errors
+err% := FilePathSet("", 0, "Folder to process");        ' Select the folder to use
+if (err% < 0) then                                      ' If folder is cancelled or bad somehow
+    Message("Folder selection failed");                 ' Give a message
+    halt;                                               ' and quit
+endif                                              
+
+var nme$;                                               ' Dummy variable for filelist command
+var num%;                                               ' Variable for number of found files
+num% := Filelist(nme$, -1, spec$);                      ' Get the number of matching files in the folder
+if (num% <= 0) then                                     ' If no files exist.....
+    Message("No data files to process");
+    halt;                                               ' and quit
+endif;
+var name$[num%];                                        ' Set size of array to hold data file names
+Filelist(Name$[], -1, spec$);                           ' Get the names into the array
+
+MatLabOpen(1);
+MatlabShow(1);
+MatLabEval("cd("+FilePath$(0)+");");
+MatLabEval("clear;clc;");
+
+var i%;
+for i% := 0 to num%-1 do
+    MatLabEval("[subj, coordlm, coordap, depth] = extract_info_pyel('"+name$[i%]+"');");
+    MatlabGet("coordlm",ml);
+    MatlabGet("coordap",ap);
+    MatlabGet("depth",dp);
+    GetComments%(name$[i%],i%);                             'do the import for this file
+next;
+
+MatlabGet("subj",subj$);
+MatLabClose();
+
+View(textvw1%);
+FileSaveAs(subj$+"_"+"ExtElecLog"+".txt",1,0);
+FileClose();
+View(textvw2%);
+FileSaveAs(subj$+"_"+"ExtElec"+".txt",1,0);
+FileClose();
+end
+
+' A function to import a single file & log how it went
+Func GetComments%(file$, num%);
+
+PrintLog("Getting comments from file %s: ", file$);                 ' Log what we are doing
+
+ok% := FileOpen(file$, 0);
+
+var howmany%[2];
+ChanList(howmany%[],16);
+
+if howmany%[0] = 1 then
+    wvmrkch% := howmany%[1];
+else
+    wvmrkch% := WvmrkChoose();
+endif;
+
+var numcl := getWavemarkInfo(wvmrkch%,2);
+
+var j%;
+for j%:= 1 to numcl do
+        
+    ' write neuron coordinates
+    
+    View(textvw2%).Print(Str$(1)+" "); 'classifications
+    View(textvw2%).Print(Str$(1)+" ");
+
+    View(textvw2%).Print(Str$(ml)+" "); 'coordinates
+    View(textvw2%).Print(Str$(ap)+" ");
+    View(textvw2%).Print(Str$(dp)+" ");
+    View(textvw2%).Print(Str$(cntnr%)); ' current neuron
+    
+    View(textvw2%).Print("\n");
+    
+    'write comments
+    
+    View(textvw1%).Print(Str$(cntnr%)+". ");
+    View(textvw1%).Print(file$+" ;");
+    var k%;
+    for k% := 1 to 5 do
+        View(textvw1%).Print(View(ok%).FileComment$(k%)+"  ;");
+    next;
+    View(textvw1%).Print("\n");
+    cntnr% += 1;
+next;
+
+if (ok% < 0) then                                       ' Say how we did
+    PrintLog("import failed, error %d (%s)\n", ok%, error$(ok%));
+else
+    PrintLog(file$);
+    PrintLog("import successfull\n");
+    View(ok%);FileClose();                                        ' Close the file
+endif;
+return ok%;                                             ' and we are done
+end
