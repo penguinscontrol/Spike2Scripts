@@ -44,6 +44,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 
 from matplotlib.figure import Figure
 from matplotlib.pyplot import get_cmap
+from matplotlib.lines import Line2D
 from itertools import product, combinations
 
 class Form(QMainWindow):
@@ -522,7 +523,8 @@ class Form(QMainWindow):
         self.Tab.addTab(self.ExtCoordinate, 'External point')
     
 # RADU: Add Interface Elements
-        
+        self.canvas.mpl_connect('pick_event', self.on_pick) # binding for click on axes
+		
         self.Sp2Coordinate = QGroupBox('External input point')
         Sp2APPosLbl = QLabel('AP')
         self.Sp2APPos = QDoubleSpinBox()
@@ -640,7 +642,30 @@ class Form(QMainWindow):
             self.CCut.setValue(0)
             self.CCut.blockSignals(False)
             
-            self.plotData()            
+            self.plotData()
+			
+    def on_pick(self, event):
+        # The event received here is of the type
+        # matplotlib.backend_bases.PickEvent
+        #
+        # It carries lots of information, of which we're using
+        # only a small amount here.
+        #
+        
+        #pdb.set_trace()
+        for aa in range(0,len(self.data.ElectrodeMarkers)):
+            if self.data.ElectrodeMarkers[aa].checkinclusion(event.artist):
+                idx = aa
+                break
+
+        #pdb.set_trace()
+        msg0 = 'You have selected file: %s.' % self.data.ElectrodeMarkers[idx].sp2comments[0]
+        msg1 = '\n%s' % self.data.ElectrodeMarkers[idx].sp2comments[1]
+        msg2 = '\n%s' % self.data.ElectrodeMarkers[idx].sp2comments[2]
+        msg3 = '\n%s' % self.data.ElectrodeMarkers[idx].sp2comments[3]
+        msg4 = '\n%s' % self.data.ElectrodeMarkers[idx].sp2comments[4]
+        QMessageBox.information(self, "Click!", msg0+msg1+msg2+msg3+msg4)
+		
     
     def setLinkedCFlag(self):                
         if self.PlaneCExternal.isChecked() or self.Sp2PlaneCExternal.isChecked() is True:
@@ -1730,6 +1755,12 @@ class Form(QMainWindow):
                     if sum(shape(idd))>0:
                         MxPos=max(array([max(abs(Electrode[idd, 0]-(self.NumImages - TRBack[0] - 1))),MxPos]))
                         plA.plot(Electrode[idd, 2], Electrode[idd, 1], '.',color=self.scalarMap.to_rgba(UniquePos[zz]))
+                        #pdb.set_trace()
+                        for aa in idd:
+                            self.data.ElectrodeMarkers[indXElect[aa]].plAc.set_xdata(Electrode[aa, 2])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plAc.set_ydata(Electrode[aa, 1])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plAc.set_color(self.scalarMap.to_rgba(UniquePos[zz]))
+                            plA.add_line(self.data.ElectrodeMarkers[indXElect[aa]].plAc)
                 
                 if MxPos==-10.0:
                     MxPos=NAN
@@ -1744,6 +1775,14 @@ class Form(QMainWindow):
                     if sum(shape(idd))>0:
                         MxPos=max(array([max(abs(Electrode[idd, 0]-(self.NumImages - TRBack[0] - 1))),MxPos]))
                         plA.plot(Electrode[idd, 2], Electrode[idd, 1], '.',color=self.scalarMap.to_rgba(UniquePos[zz]))
+                        for aa in idd:
+                            #pdb.set_trace()
+                            self.data.ElectrodeMarkers[indXElect[aa]].plAc.set_xdata(Electrode[aa, 2])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plAc.set_ydata(Electrode[aa, 1])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plAc.set_color(self.scalarMap.to_rgba(UniquePos[zz]))
+                            plA.add_line(self.data.ElectrodeMarkers[indXElect[aa]].plAc)
+                
+
                 
                 if MxPos==-10.0:
                     MxPos=NAN
@@ -1775,6 +1814,14 @@ class Form(QMainWindow):
                     if sum(shape(idd))>0:
                         MxPos=max(array([max(abs(Electrode[idd, 1]-(self.NumImages - TRBack[1] - 1))),MxPos]))
                         plB.plot(Electrode[idd, 2], Electrode[idd, 0], '.',color=self.scalarMap.to_rgba(UniquePos[zz]))
+                        for aa in idd:
+                            #pdb.set_trace()
+                            self.data.ElectrodeMarkers[indXElect[aa]].plBc.set_xdata(Electrode[aa, 2])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plBc.set_ydata(Electrode[aa, 0])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plBc.set_color(self.scalarMap.to_rgba(UniquePos[zz]))
+                            plB.add_line(self.data.ElectrodeMarkers[indXElect[aa]].plBc)
+                
+
                 
                 if MxPos==-10.0:
                     MxPos=NAN
@@ -1789,6 +1836,14 @@ class Form(QMainWindow):
                     if sum(shape(idd))>0:
                         MxPos=max(array([max(abs(Electrode[idd, 1]-(self.NumImages - TRBack[1] - 1))),MxPos]))
                         plB.plot(Electrode[idd, 2], Electrode[idd, 0], '.',color=self.scalarMap.to_rgba(UniquePos[zz]))
+                        for aa in idd:
+                            #pdb.set_trace()
+                            self.data.ElectrodeMarkers[indXElect[aa]].plBc.set_xdata(Electrode[aa, 2])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plBc.set_ydata(Electrode[aa, 0])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plBc.set_color(self.scalarMap.to_rgba(UniquePos[zz]))
+                            plB.add_line(self.data.ElectrodeMarkers[indXElect[aa]].plBc)
+                
+
                 
                 if MxPos==-10.0:
                     MxPos=NAN
@@ -1818,6 +1873,14 @@ class Form(QMainWindow):
                     if sum(shape(idd))>0:
                         MxPos=max(array([max(abs(Electrode[idd, 2]-(self.NumImages - TRBack[2]))),MxPos]))
                         plC.plot(Electrode[idd, 1], Electrode[idd, 0], '.',color=self.scalarMap.to_rgba(UniquePos[zz]))
+                        for aa in idd:
+                            #pdb.set_trace()
+                            self.data.ElectrodeMarkers[indXElect[aa]].plCc.set_xdata(Electrode[aa, 1])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plCc.set_ydata(Electrode[aa, 0])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plCc.set_color(self.scalarMap.to_rgba(UniquePos[zz]))
+                            plC.add_line(self.data.ElectrodeMarkers[indXElect[aa]].plCc)
+                
+
                 
                 if MxPos==-10.0:
                     MxPos=NAN
@@ -1832,6 +1895,14 @@ class Form(QMainWindow):
                     if sum(shape(idd))>0:
                         MxPos=max(array([max(abs(Electrode[idd, 0]-(self.NumImages - TRBack[2] - 1))),MxPos]))
                         plC.plot(Electrode[idd, 1], Electrode[idd, 0], '.',color=self.scalarMap.to_rgba(UniquePos[zz]))
+                        for aa in idd:
+                            #pdb.set_trace()
+                            self.data.ElectrodeMarkers[indXElect[aa]].plCc.set_xdata(Electrode[aa, 1])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plCc.set_ydata(Electrode[aa, 0])
+                            self.data.ElectrodeMarkers[indXElect[aa]].plCc.set_color(self.scalarMap.to_rgba(UniquePos[zz]))
+                            plC.add_line(self.data.ElectrodeMarkers[indXElect[aa]].plCc)
+                
+
                 
                 if MxPos==-10.0:
                     MxPos=NAN
@@ -2049,7 +2120,20 @@ class DialogAddPoint(object):
         
     def getDimensions(self):
         return self.ARotO.value(), self.BRotO.value()
-
+		
+class Neuron(object):
+    def __init__(self):
+        self.plAc = Line2D([0],[0],marker = 'D', markersize = 6, picker = 'boolean', pickradius = 6) #plane A tick mark
+        self.plBc = Line2D([0],[0],marker = 'D', markersize = 6, picker = 'boolean', pickradius = 6)
+        self.plCc = Line2D([0],[0],marker = 'D', markersize = 6, picker = 'boolean', pickradius = 6)
+        self.path = ""
+        self.sp2comments = array(['','','','','','',''], dtype = str)
+    def checkinclusion(self,lineobj):
+        if lineobj == self.plAc or lineobj == self.plBc or lineobj == self.plCc:
+            return 1
+        else:
+            return 0
+        
 class StartAddPointDialog(QDialog, DialogAddPoint):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
@@ -2076,6 +2160,7 @@ class MRIData:
         self.depthCorrection = 0.0
         self.coordChamber = array([0, 0, 0])
         self.rotChamber = array([0.0, 0.0, 0.0], dtype=float)
+        self.ElectrodeMarkers = []
                 
     def get_PGM_bytedata_string(self, arr):
         '''Given a 2D numpy array as input write gray-value image data in the PGM 
@@ -2265,10 +2350,18 @@ class MRIData:
         
     def LoadElecPos(self):
         TMPData = loadtxt(self.ElectrodeDirectory + self.ElectrodeFile, dtype=float)
+        TMPLog = loadtxt(self.ElectrodeDirectory + self.ElectrodeFile.replace('.txt','Log.txt'), dtype = str,delimiter = ';')
+
                 
         self.ElectrodeData = (1.0 / self.PixSize) * array([TMPData[:, 2], TMPData[:, 3], (TMPData[:, 4] / 1000.0)], dtype=float).T
         self.ElectrodeMonkeyData = array([TMPData[:, 0], TMPData[:, 1]], dtype=float).T
         
+        for ii in range(0,TMPData.shape[0]):
+            tmpnr = Neuron()
+            tmpnr.sp2comments = TMPLog[ii,:].T
+            self.ElectrodeMarkers.append(tmpnr)
+
+        #pdb.set_trace()
         self.MonkeyNum = sort(unique(TMPData[:, 0]))
         self.NeuronsType = sort(unique(TMPData[:, 1]))
 
