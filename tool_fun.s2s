@@ -456,7 +456,7 @@ ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),trch%);
 FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,
 "UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
-
+ExportChanList(1); 'Initialise the channel list
 return 1
 end
 
