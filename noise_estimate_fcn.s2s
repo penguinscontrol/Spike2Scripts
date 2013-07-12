@@ -27,7 +27,7 @@ var newmark% := SSOpen(2,1);
 SSChan(ch%); Draw();
 
 '' Set wavemark parameters
-SSTempSizeSet(8,32,48,16); 'First number: how many samples right of the first one; Second number: how many samples in template? Third: How many samples in window; Fourth: How far into the window is 0
+SSTempSizeSet(12,32,80,24); 'First number: how many samples right of the first one; Second number: how many samples in template? Third: How many samples in window; Fourth: How far into the window is 0
 SSParam(16, 32.00, 50, 20.00, 90.00, 2, 1, 128, 2, 31); 
 Optimise(); Draw();
 View(ViewLink()).HCursorDelete(-1); 'Delete all horizontal cursors
