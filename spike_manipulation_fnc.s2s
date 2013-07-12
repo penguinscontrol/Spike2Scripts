@@ -6,12 +6,12 @@ var timevw%, tempinthvw%, myinthvw%, myavgvw%,tempavgvw%;
 var ssdir$ := "E:\\Spike_Sorting\\";
 var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
 
-'MatlabOpen(1);
-'MatlabEval("clear;");
-'MatlabEval("getuserinfo;");
-'MatLabGet("githubdirectory",githubpath$);
-'MatlabGet("directory",ssdir$);
-'MatlabClose();
+MatlabOpen(1);
+MatlabEval("clear;");
+MatlabEval("getuserinfo;");
+MatLabGet("githubdirectory",githubpath$);
+MatlabGet("directory",ssdir$);
+MatlabClose();
 
 
 func countwaves(ch%) 'counts the waves in a wavemark

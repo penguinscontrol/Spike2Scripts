@@ -1,7 +1,18 @@
 function out = data_prep(noise_est, plotting)
 
 global act_name;
-cd('E:\\Spike_Sorting\\spike2temp\\');
+
+if strcmp(getenv('username'),'DangerZone')
+        directory = 'E:\data\Recordings\';
+    elseif strcmp(getenv('username'),'Radu')
+        directory = 'E:\Spike_Sorting\';
+    elseif strcmp(getenv('username'),'The Doctor')
+        directory = 'C:\Users\The Doctor\Data\';
+    else
+        directory = 'B:\data\Recordings\';
+    end
+
+cd([directory, 'spike2temp\']);
 
 % load('holdisi.mat'); % post simple spike data
 % tn1 = whos; % temporary name holder
@@ -41,7 +52,7 @@ maxi = max(pks);
 mini = -max(trs);
 pk2pk = maxi-mini;
 
-htlim = 0.1*pk2pk; %minimum height for a peak/trough
+htlim = 0.15*pk2pk; %minimum height for a peak/trough
 
 [pks,pklocs] = findpeaks(mu,'minpeakheight',htlim);
 [trs,trlocs] = findpeaks(-mu,'minpeakheight',htlim);

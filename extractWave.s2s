@@ -14,7 +14,7 @@ halt;
 
 proc main()
 
-FilePathSet("E:\\Spike_Sorting\\",0);
+FilePathSet(ssdir$,0);
 
 timevw% := FileOpen("",0,3); 'Open a file for processing
 WindowVisible(3);
