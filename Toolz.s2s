@@ -8,16 +8,17 @@ timevw% := View();
 ToolbarClear();     'Remove any old buttons
 ToolbarSet(0, "", idlefun%);   'Idle routine
 ToolbarSet(1, "Quit",quit%);
-ToolbarSet(3, "&PredictPCA", PredictPCA%);   'Link to function
-ToolbarSet(4,"Collision Detection",coldetect%);
-ToolbarSet(6, "INTH",MyINTH2%);
-ToolbarSet(7,"SNR",snrfromfile%);
-ToolbarSet(8,"Waveform",waveavg%);
-ToolbarSet(9,"3D",wave3D%);
-ToolbarSet(11,"Add to PyEl", add2pyel%);
-ToolbarSet(12, "REXDataGUI",gotogui%);
-ToolbarSet(13, "ToREXDataGUI",torex%);
-ToolbarSet(14,"Get Triggers",gettrigs%);
-ToolbarSet(16, "Feats2Mat",savefeats%);
+ToolbarSet(3, "Move Displaced",movedist%);
+ToolbarSet(4, "&PredictPCA", PredictPCA%);   'Link to function
+ToolbarSet(6,"Collision Detection",coldetect%);
+ToolbarSet(7, "INTH",MyINTH2%);
+ToolbarSet(8,"SNR",snrfromfile%);
+ToolbarSet(9,"Waveform",waveavg%);
+ToolbarSet(11,"3D",wave3D%);
+ToolbarSet(12,"Add to PyEl", add2pyel%);
+ToolbarSet(13, "REXDataGUI",gotogui%);
+ToolbarSet(14, "ToREXDataGUI",torex%);
+ToolbarSet(16,"Get Triggers",gettrigs%);
+ToolbarSet(18, "Feats2Mat",savefeats%);
 return Toolbar("Things you can do", 511);
 end;

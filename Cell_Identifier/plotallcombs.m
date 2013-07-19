@@ -1,4 +1,5 @@
 function plotallcombs(x)
+cd('C:\Users\The Doctor\Documents\GitHub\Spike2Scripts\Cell_Identifier\');
 plotfeats(x,'wid','isi_kurt');
 plotfeats(x,'wid','isi_skew');
 plotfeats(x,'wid','isi_med');

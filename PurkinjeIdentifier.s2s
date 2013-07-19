@@ -1,6 +1,6 @@
 #include "tool_fun.s2s"
 
-var tsz := 0.005;
+var tsz := 0.0075;
 var t := -1;
 timevw% := View();
 var ssz := View(timevw%).Floor(tsz/Binsize(1));
@@ -10,6 +10,7 @@ var asz% := fsz%/2+1; 'number of samples corresponding to amplitude of fft
 var ccode% := 31; 'code for complex spike
 var ssclus%; 'code for simple spikes
 var tailchan%; 'channel to hold the tsz long waveform after each simple spike
+var cschan%; 'channel to hold isolated complex spikes for inspection
 
 var wavw% := SetResult(1,ssz,1,0,"Waveform", "samples", "V", "","",0);
 ChanTitle$(1,"Waveform");
@@ -50,10 +51,12 @@ ToolbarSet(3,"Go to Time...", gototime%);
 ToolbarSet(5, "Mark as C|0x24", markasc%);
 ToolbarSet(6, "Mark as S|0x23", markass%);
 ToolbarSet(8, "FFT Find", autopurk%);
-ToolbarSet(10, "Copy tails 2 spikes", copytails%);
-ToolbarSet(11, "Clear CS tails", cleartails%);
-ToolbarSet(12, "Get tails", gettails%);
-ToolbarSet(14, "Quit", quit%);
+ToolbarSet(10, "Clear CS tails", cleartails%);
+ToolbarSet(12, "Copy tails 2 spikes", copytails%);
+ToolbarSet(13, "Get tails", gettails%);
+ToolbarSet(15,"Copy CS 2 spikes",copycs%);
+ToolbarSet(16, "Get CS",getcs%);
+ToolbarSet(18, "Quit", quit%);
 return Toolbar("Let's find a Purkinje cell", 511);
 MarkMask(wvmrkch%,0,1,-1);
 end
@@ -255,11 +258,63 @@ return 1
 end
 
 func copytails%()
+View(timevw%);
 if tailchan% <> 0 then
 var code%[4],wvfrm[samps%];
 t := -1;
+
 repeat
     t := NextTime(tailchan%,t,code%,wvfrm[]);
+    MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);    
+until t = -1;
+endif;
+return 1
+end
+
+func getcs%()
+
+var ok%,ssc%,csc%;
+DlgCreate("Isolate CS");
+DlgInteger(1,"Simple Spike Cluster:",0,64);
+DlgInteger(2,"Complex Spike Cluster:",0,64);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(ssc%,csc%);
+View(timevw%);
+MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%,0,1,csc%);
+
+View(fftvw%).WindowVisible(0);
+View(wavw%).WindowVisible(0);
+
+var code%[4],wvfrm[samps%], pre%;
+var extsz := ssz+MarkInfo(wvmrkch%,pre%);
+var cur[extsz];
+var j,k;
+
+t := -1;
+
+View(timevw%);
+cschan% := MemChan(6,extsz,BinSize(wvmrkch%),pre%);
+
+var i%;
+repeat
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    View(timevw%).ChanData(1,cur[],t,MaxTime());
+    MemSetItem(cschan%,0,t,code%,cur[]);        
+until t = -1;
+ChanShow(cschan%);
+return 1
+end
+
+func copycs%()
+View(timevw%);
+if cschan% <> 0 then
+var code%[4],wvfrm[samps%];
+t := -1;
+
+repeat
+    t := NextTime(cschan%,t,code%,wvfrm[]);
     MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);    
 until t = -1;
 endif;

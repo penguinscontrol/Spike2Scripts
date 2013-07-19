@@ -5,6 +5,10 @@ Func idlefun%()   'Button 0 routine
 'Your code in here...
 return 1;  'This leaves toolbar active
 end;
+func movedist%()
+
+return 1;
+end;
 
 Func PredictPCA%()   'Button 1 routine
 wvmrkch% := WvmrkChoose();

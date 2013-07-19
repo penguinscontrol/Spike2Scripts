@@ -591,7 +591,7 @@ class Form(QMainWindow):
         self.setChamberFlags()
         self.setClipFlag()
 	
-        self.fs_mon_path = 'C:\Users\Radu\Documents\GitHub\Spike2Scripts\sp2pyelcoords.txt'
+        self.fs_mon_path = 'C:\Users\The Doctor\Documents\GitHub\Spike2Scripts\sp2pyelcoords.txt'
         self.fs_watcher = QFileSystemWatcher([self.fs_mon_path])
         self.connect(self.fs_watcher, SIGNAL('fileChanged(QString)'), self.getSp2Coords)
 
