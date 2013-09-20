@@ -24,6 +24,9 @@ elseif strcmp(archst, 'win32') || strcmp(archst, 'win64')
     elseif strcmp(getenv('username'),'The Doctor')
         directory = 'C:\Users\The Doctor\Data\';
         githubdirectory = 'C:\Users\The Doctor\Documents\GitHub\';
+    elseif strcmp(getenv('username'),'JuanandKimi')
+        directory = 'C:\Data\Recordings\';
+        githubdirectory = 'C:\Users\JuanandKimi\Documents\GitHub';
     else
         directory = 'B:\data\Recordings\';
     end

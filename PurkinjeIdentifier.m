@@ -5,6 +5,8 @@ if strcmp(getenv('username'),'DangerZone')
         directory = 'E:\Spike_Sorting\';
     elseif strcmp(getenv('username'),'The Doctor')
         directory = 'C:\Users\The Doctor\Data\';
+    elseif strcmp(getenv('username'),'JuanandKimi')
+        directory = 'C:\Data\Recordings\';
     else
         directory = 'B:\data\Recordings\';
     end
