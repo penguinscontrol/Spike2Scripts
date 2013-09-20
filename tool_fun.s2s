@@ -414,6 +414,27 @@ func coldetect%()
 return 1
 end
 
+func vtrtogui%()
+
+var ok%,trch%;
+DlgCreate("Export for RexDataGUI");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Channel",131074);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trch%);    'ok% is 0 if user cancels,  variables updated if not
+if ok% = 0 then halt; endif;
+
+var trsz%; 'how long is the longest trial?
+var t := -1;
+
+repeat
+    t := NextTime(trch%,t); 'get the spike
+    until t = -1;
+
+var rawv% := MemChan(7,trsz%) 'make channel to hold raws
+return 1
+end
+
 func torex%()
 
 var ok%,trch%;
