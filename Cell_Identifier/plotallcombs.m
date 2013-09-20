@@ -1,5 +1,16 @@
 function plotallcombs(x)
-cd('C:\Users\The Doctor\Documents\GitHub\Spike2Scripts\Cell_Identifier\');
+
+if strcmp(getenv('username'),'DangerZone')
+        directory = 'E:\data\Recordings\';
+    elseif strcmp(getenv('username'),'Radu')
+        directory = 'E:\Spike_Sorting\';
+    elseif strcmp(getenv('username'),'The Doctor')
+        directory = 'C:\Users\The Doctor\Data\';
+    else
+        directory = 'B:\data\Recordings\';
+end
+cd(directory);
+
 plotfeats(x,'wid','isi_kurt');
 plotfeats(x,'wid','isi_skew');
 plotfeats(x,'wid','isi_med');
