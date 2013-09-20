@@ -38,6 +38,7 @@ if ok% = 0 then halt; endif;
 var trsz; 'how long is the longest trial?
 var t1 := -1,t2 := -1;
 var curtrsz; 'hold current trial size
+
 repeat
     t1 := NextTime(trch%,t2); 'get the first trig time
     t2 := NextTime(trch%,t1); 'gett the secoond trig time
@@ -45,21 +46,26 @@ repeat
     if trsz < curtrsz then trsz := curtrsz; endif;
     until t2 = -1;
 
-var rawv% := MemChan(7,trsz); 'make channel to hold raws
+ok% := MatLabOpen(1); 'Open a connection to Matlab
+MatLabShow(1);
+ok% := MatLabEval("clear; clc;");
+ok% := MatLabEval("trials = cell(1,1);");
 
 t1 := -1;
 t2 := -1;
 var trvals[trsz];
 
-repeat
-    t1 := NextTime(trch%,t2);
-    t2 := NextTime(trch%,t1);
-    View(timevw%).ChanData(1,trvals[],t1,MaxTime());
-    MemSetItem(rawv%,0,t1,1,trvals[]);
+repeat    
+    t1 := NextTime(trch%,t2); 'get the first trig time
+    t2 := NextTime(trch%,t1); 'gett the secoond trig time
+    
+    View(timevw%).ChanData(1,trvals[],t1,t2);
+    ok% := MatLabPut("trvals",trvals[]);
+    
+    ok% := MatLabEval("trials = [trials;trvals];");
 until t2 = -1;
 
-ChanShow(rawv%);
-
+ok% := MatLabEval("trials(1) = [];");
 return 1
 
 end;
