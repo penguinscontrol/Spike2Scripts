@@ -10,16 +10,56 @@ ToolbarSet(0, "", idlefun%);   'Idle routine
 ToolbarSet(1, "Quit",quit%);
 ToolbarSet(3, "Move Displaced",movedist%);
 ToolbarSet(4, "&PredictPCA", PredictPCA%);   'Link to function
-ToolbarSet(6,"Collision Detection",coldetect%);
+ToolbarSet(6, "Collision Detection",coldetect%);
 ToolbarSet(7, "INTH",MyINTH2%);
-ToolbarSet(8,"SNR",snrfromfile%);
-ToolbarSet(9,"Waveform",waveavg%);
-ToolbarSet(11,"3D",wave3D%);
-ToolbarSet(12,"Add to PyEl", add2pyel%);
+ToolbarSet(8, "SNR",snrfromfile%);
+ToolbarSet(9, "Waveform",waveavg%);
+ToolbarSet(11, "3D",wave3D%);
+ToolbarSet(12, "Add to PyEl", add2pyel%);
 ToolbarSet(13, "REXDataGUI",gotogui%);
 ToolbarSet(14, "ToREXDataGUI",torex%);
-ToolbarSet(16,"Get Triggers",gettrigs%);
+ToolbarSet(16, "Get Triggers",gettrigs%);
 ToolbarSet(18, "Feats2Mat",savefeats%);
-ToolbarSet(19,"VTr2Mat", vtrtogui%);
+ToolbarSet(19, "VTr2Mat", vtrtogui%);
 return Toolbar("Things you can do", 511);
+end;
+
+
+func vtrtogui%()
+
+var ok%,trch%;
+DlgCreate("Export raw voltages");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Channel",131074);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trch%);    'ok% is 0 if user cancels,  variables updated if not
+if ok% = 0 then halt; endif;
+
+var trsz; 'how long is the longest trial?
+var t1 := -1,t2 := -1;
+var curtrsz; 'hold current trial size
+repeat
+    t1 := NextTime(trch%,t2); 'get the first trig time
+    t2 := NextTime(trch%,t1); 'gett the secoond trig time
+    curtrsz := View(timevw%).Floor((t2-t1)/Binsize(1)); 'how many samples is the trial
+    if trsz < curtrsz then trsz := curtrsz; endif;
+    until t2 = -1;
+
+var rawv% := MemChan(7,trsz); 'make channel to hold raws
+
+t1 := -1;
+t2 := -1;
+var trvals[trsz];
+
+repeat
+    t1 := NextTime(trch%,t2);
+    t2 := NextTime(trch%,t1);
+    View(timevw%).ChanData(1,trvals[],t1,MaxTime());
+    MemSetItem(rawv%,0,t1,1,trvals[]);
+until t2 = -1;
+
+ChanShow(rawv%);
+
+return 1
+
 end;
