@@ -13,7 +13,7 @@ ToolbarSet(4, "&PredictPCA", PredictPCA%);   'Link to function
 ToolbarSet(6, "Collision Detection",coldetect%);
 ToolbarSet(7, "INTH",saveINTH%);
 ToolbarSet(8, "SNR",snrfromfile%);
-ToolbarSet(9, "Waveform",waveavg%);
+ToolbarSet(9, "Waveform",waveavg2%);
 ToolbarSet(11, "3D",wave3D%);
 ToolbarSet(12, "Add to PyEl", add2pyel%);
 ToolbarSet(13, "REXDataGUI",gotogui%);
