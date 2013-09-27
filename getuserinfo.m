@@ -13,7 +13,6 @@ if strcmp(archst, 'maci64')
 elseif strcmp(archst, 'win32') || strcmp(archst, 'win64')
     if strcmp(getenv('username'),'SommerVD') || ...
             strcmp(getenv('username'),'LabV') || ...
-            strcmp(getenv('username'),'Purkinje') || ...
             strcmp(getenv('username'),'vp35')
         directory = 'C:\Data\Recordings\';
     elseif strcmp(getenv('username'),'DangerZone')
@@ -27,6 +26,9 @@ elseif strcmp(archst, 'win32') || strcmp(archst, 'win64')
     elseif strcmp(getenv('username'),'JuanandKimi')
         directory = 'C:\Data\Recordings\';
         githubdirectory = 'C:\Users\JuanandKimi\Documents\GitHub';
+    elseif strcmp(getenv('username'),'Purkinje')
+        directory = 'C:\Data\Recordings\';
+        githubdirectory = 'C:\Users\Purkinje\Documents\GitHub';
     else
         directory = 'B:\data\Recordings\';
     end
