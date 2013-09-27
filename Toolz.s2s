@@ -11,7 +11,7 @@ ToolbarSet(1, "Quit",quit%);
 ToolbarSet(3, "Move Displaced",movedist%);
 ToolbarSet(4, "&PredictPCA", PredictPCA%);   'Link to function
 ToolbarSet(6, "Collision Detection",coldetect%);
-ToolbarSet(7, "INTH",MyINTH2%);
+ToolbarSet(7, "INTH",saveINTH%);
 ToolbarSet(8, "SNR",snrfromfile%);
 ToolbarSet(9, "Waveform",waveavg%);
 ToolbarSet(11, "3D",wave3D%);
@@ -22,51 +22,4 @@ ToolbarSet(16, "Get Triggers",gettrigs%);
 ToolbarSet(18, "Feats2Mat",savefeats%);
 ToolbarSet(19, "VTr2Mat", vtrtogui%);
 return Toolbar("Things you can do", 511);
-end;
-
-
-func vtrtogui%()
-
-var ok%,trch%;
-DlgCreate("Export raw voltages");  'Start new dialog
-DlgChan(1,"Please indicate Trigger Channel",131074);
-DlgButton(0,"Cancel");
-DlgButton(1,"OK");
-ok% := DlgShow(trch%);    'ok% is 0 if user cancels,  variables updated if not
-if ok% = 0 then halt; endif;
-
-var thisname$ := FileName$(3)+FileName$(4);
-var subj$ := Left$(thisname$,1);
-
-    var subjects$[3],subchoice%;
-    subjects$[0] := "Rigel";
-    subjects$[1] := "Sixx";
-    subjects$[2] := "Hilda";
-
-docase
-case subj$ = "R" then
-    subj$ := subjects$[0];
-case subj$ = "S" then
-    subj$ := subjects$[1];
-case subj$ = "H" then
-    subj$ := subjects$[2];
-else 
-    DlgCreate("Export for REXDataGUI");
-    DlgList(1,"Which subject is this?",subjects$[]);
-    DlgButton(0,"Cancel");
-    DlgButton(1,"Done");
-    ok% := DlgShow(subchoice%);
-    if ok% = 0 then halt; endif;
-    subj$ := subjects$[subchoice%];   
-endcase;
-
-View(timevw%);
-ExportChanList(1); 'Initialise the channel list
-ExportChanList(0, MaxTime(),1);
-FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"v.mat",100,0,"",0,
-"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
-
-
-return 1
-
 end;

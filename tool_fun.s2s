@@ -152,6 +152,60 @@ return 1;
 
 end
 
+func saveINTH%()
+
+var binsz, winl, binco%, ok%;
+var thisname$ := FileName$(3)+FileName$(4);
+View(timevw%);
+
+DlgCreate("INTH Generator");  'Start new dialog
+DlgChan(1,"Please indicate WaveMark channel",131088);
+DlgReal(2, "Width (s)",0.5,5);
+DlgReal(3, "Bin size (s)",0.001,0.5);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(wvmrkch%,winl,binsz);    'ok% is 0 if user cancels,  variables updated if not
+
+binco% := winl/binsz;
+
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+var inthwin%[codescnt%];
+var a%, newname$;
+var t := -1;
+for a% := 0 to codescnt%-1 do
+
+    View(timevw%);
+    
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,a%+1);
+    t := -1;
+    t := NextTime(wvmrkch%,t);
+    if t <> -1 then        
+        inthwin%[a%] := SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
+        Process(0,MaxTime(),0,0);
+        WindowVisible(1);
+        Optimise(-1);
+    
+        View(inthwin%[a%]); 'set color
+        var r,g,b;
+        ColourGet(1,a%+1,r,g,b);
+        ChanColourSet(1,1,0,0,0);
+        ChanColourSet(1,2,r,g,b);
+        newname$ := "Cluster "+Str$(a%+1);
+        WindowTitle$(newname$);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(a%+1)+".jpeg",14);
+    endif;
+    
+;
+next;
+
+MarkMask(wvmrkch%,0,0,-1);
+
+return 1;
+end
+
 func snrfromfile%()
 var sig, thres, ampstd;
 View(timevw%);
@@ -183,7 +237,7 @@ func waveavg%()
 wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
 samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
 
-var codescnt%;   'how many clusters
+'var codescnt%;   'how many clusters
 codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
 
 myavgvw% := SetResult((codescnt%+1),samps%,View(timevw%).Binsize(),0,"Average Waveform", "ms", "", "","",4);
@@ -580,8 +634,54 @@ View(filevwlog%);
 FileSave();
 FileClose();
 
-return 1
+return 1;
 end
+
+func vtrtogui%()
+
+var ok%,trch%;
+DlgCreate("Export raw voltages");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Channel",131074);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trch%);    'ok% is 0 if user cancels,  variables updated if not
+if ok% = 0 then halt; endif;
+
+var thisname$ := FileName$(3)+FileName$(4);
+var subj$ := Left$(thisname$,1);
+
+    var subjects$[3],subchoice%;
+    subjects$[0] := "Rigel";
+    subjects$[1] := "Sixx";
+    subjects$[2] := "Hilda";
+
+docase
+case subj$ = "R" then
+    subj$ := subjects$[0];
+case subj$ = "S" then
+    subj$ := subjects$[1];
+case subj$ = "H" then
+    subj$ := subjects$[2];
+else 
+    DlgCreate("Export for REXDataGUI");
+    DlgList(1,"Which subject is this?",subjects$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    ok% := DlgShow(subchoice%);
+    if ok% = 0 then halt; endif;
+    subj$ := subjects$[subchoice%];   
+endcase;
+
+View(timevw%);
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),1);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"v.mat",100,0,"",0,
+"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+
+
+return 1
+
+end;
 
 func findpwof2(in)
 var n%;
