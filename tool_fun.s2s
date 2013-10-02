@@ -154,14 +154,16 @@ end
 
 func saveINTH%()
 
-var binsz, winl, binco%, ok%;
+var  binco%, ok%;
+var winl := 0.3;
+var binsz := 0.001;
 var thisname$ := FileName$(3)+FileName$(4);
 View(timevw%);
 
 DlgCreate("INTH Generator");  'Start new dialog
 DlgChan(1,"Please indicate WaveMark channel",131088);
-DlgReal(2, "Width (s)",0.5,5);
-DlgReal(3, "Bin size (s)",0.001,0.5);
+DlgReal(2, "Width (s)",0.05,5);
+DlgReal(3, "Bin size (s)",0.0001,0.5);
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(wvmrkch%,winl,binsz);    'ok% is 0 if user cancels,  variables updated if not
@@ -202,7 +204,7 @@ for a% := 0 to codescnt%-1 do
 next;
 
 View(timevw%);
-MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
 
 return 1;
 end
@@ -331,7 +333,7 @@ for a% := 0 to codescnt%-1 do
 ;
 next;
 View(timevw%);
-MarkMask(wvmrkch%,0,0,-1);
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
 
 return 1;
 end
