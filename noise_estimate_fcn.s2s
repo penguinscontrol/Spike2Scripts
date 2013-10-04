@@ -1,6 +1,6 @@
 func getnoise(ch%)
 var noise;
-var max% := XtoBin(MaxTime());
+var max% := Ceil(Maxtime()/Binsize(ch%));
 
 if max% > 16000000 then
     max% := 1600000
@@ -50,11 +50,11 @@ end
 func median(vec[])
 var med, size, half;
 ArrSort(vec[]);
-size := Len(vec[]);
-half := Floor(size/2);
-med := vec[half];
-if 2*half = size then
-    med := (med+vec[half-1])/2;    
-endif;
+    size := Len(vec[]);
+    half := Floor(size/2);
+    med := vec[half];
+    if 2*half = size then
+        med := (med+vec[half-1])/2;
+    endif;
 return med;
 end
