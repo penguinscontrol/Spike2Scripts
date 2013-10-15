@@ -1,0 +1,48 @@
+var ok%,trch%, wvmrkch%, LFPch%, timevw%;
+timevw% := View();
+DlgCreate("Export for RexDataGUI");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Channel",131074);
+DlgChan(2,"Please indicate WaveMark Channel",131088);
+DlgChan(2,"Please indicate LFP Channel",131073);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trch%,wvmrkch%,LFPch%);    'ok% is 0 if user cancels,  variables updated if not
+if ok% = 0 then halt; endif;
+
+var thisname$ := FileName$(3)+FileName$(4);
+var subj$ := Left$(thisname$,1);
+
+    var subjects$[3],subchoice%;
+    subjects$[0] := "Rigel";
+    subjects$[1] := "Sixx";
+    subjects$[2] := "Hilda";
+
+docase
+case subj$ = "R" then
+    subj$ := subjects$[0];
+case subj$ = "S" then
+    subj$ := subjects$[1];
+case subj$ = "H" then
+    subj$ := subjects$[2];
+else 
+    DlgCreate("Export for REXDataGUI");
+    DlgList(1,"Which subject is this?",subjects$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    ok% := DlgShow(subchoice%);
+    if ok% = 0 then halt; endif;
+    subj$ := subjects$[subchoice%];   
+endcase;
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1);
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),wvmrkch%);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),trch%);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),LFPch%);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"f.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+ExportChanList(1); 'Initialise the channel list
