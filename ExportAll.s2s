@@ -1,9 +1,12 @@
+#include "pathdeclar.s2s"
+
 var ok%,trch%, wvmrkch%, LFPch%, timevw%;
 timevw% := View();
 DlgCreate("Export for RexDataGUI");  'Start new dialog
-DlgChan(1,"Please indicate Trigger Channel",131074);
-DlgChan(2,"Please indicate WaveMark Channel",131088);
-DlgChan(2,"Please indicate LFP Channel",131073);
+DlgChan(1,"Please indicate Trigger Channel",2);
+DlgChan(2,"Please indicate WaveMark Channel",16);
+DlgChan(3,"Please indicate LFP Channel",137217);  ' visible memory channels and none
+' for all Waveform channel excluding hidden channels + None option : 133121
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(trch%,wvmrkch%,LFPch%);    'ok% is 0 if user cancels,  variables updated if not
@@ -38,11 +41,11 @@ View(timevw%);
 MarkMask(wvmrkch%,0,1,-1);
 ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),wvmrkch%);
-FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+FileSaveAs(pdirs$+"Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
 ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),trch%);
-FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+FileSaveAs(pdirs$+"Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
 ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),LFPch%);
-FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"f.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+FileSaveAs(pdirs$+"Spike2Exports\\"+thisname$+"f.mat",100,0,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
 ExportChanList(1); 'Initialise the channel list
