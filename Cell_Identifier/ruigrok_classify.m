@@ -4,12 +4,24 @@ function [ out1, out2] = ruigrok_classify( in )
 if ~isa(in,'unit')
     error('input not a unit');
 end
+
 for a = 1:length(in)
-    if in(a).log_cv > 0.38 || in(a).freq_bar < 0.5
-        in(a).label = 'granule';
-    elseif in(a).log_cv < 0.34 || in(a).freq_bar > 0.6
-    else
-        in(a).label = 'border';
+    if strcmp(in(a).label,'unclassified')
+        if in(a).isi_med < 0.02
+            in(a).label = 'purkinje';
+        else
+        end
+    end
+end
+
+for a = 1:length(in)
+    if strcmp(in(a).label,'unclassified')
+        if in(a).log_cv > 0.38 || in(a).freq_bar < 0.5
+            in(a).label = 'granule';
+        elseif in(a).log_cv < 0.34 || in(a).freq_bar > 0.6
+        else
+            in(a).label = 'border';
+        end
     end
 end
 
