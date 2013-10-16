@@ -403,7 +403,6 @@ MatlabShow(1);
 MatlabEval("clear;clc;");
 ok% := MatlabPut("noise_est",noise);
 ok% := MatlabEval("noise_est = double(noise_est);");
-ok% := MatlabEval("global act_name;");
 
 var initial$ := Left$(thisname$,1);
 if initial$ <> "R" and initial$ <> "S" and initial$ <> "H" then
@@ -412,13 +411,15 @@ if initial$ <> "R" and initial$ <> "S" and initial$ <> "H" then
     DlgString(1,"Please indicate subject initial: ",1);
     DlgShow(initial$);
     thisname$ := initial$+thisname$;
-    ok% := MatlabPut("act_name",initial$);
 endif;
+
+ok% := MatlabPut("act_name",initial$);
+ok% := MatlabPut("f_name",thisname$);
 
 var i%;
 for i% := 1 to codescnt% do
     sendfeats(i%);
-    ok% := MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est,1);");
+    ok% := MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est,1,act_name,f_name,"+Str$(i%)+");");
     Message("Click to continue...");
 next;
 docase
@@ -430,6 +431,7 @@ case Left$(thisname$,1) = "H" then
     MatlabEval("cd('"+ssdir$+"Hilda\\Features\\');");
 endcase;
 
+MatlabEval("clear act_name f_name;");
 MatlabEval("save('"+thisname$+"');");
 
 MatlabClose();
@@ -442,36 +444,9 @@ View(timevw%);
 MarkMask(wvmrkch%,0,0,-1);
 MarkMask(wvmrkch%,0,1,curclus%);
 
-'wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
-
-
-'INTH settings
-'var binsz := 0.00025;  'How big the bin is, in s
-'var binco% := 200;  'how many bins
-'tempinthvw% := SetINTH(wvmrkch%, binco%, binsz);        
-'Process(0,View(timevw%).MaxTime(),0,0);'Get Inth
-'FileSaveAs("E:\\Spike_Sorting\\spike2temp\\holdINTH.mat",100,1,"",5); 'Export (flags)
-'View(tempinthvw%);FileClose(0,-1);View(timevw%);
-
 'Waveforms
 ExportChanList(0, MaxTime(),wvmrkch%);
 FileSaveAs(ssdir$+"spike2temp\\holdwaves.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
-
-'Measurements
-'var tmphold% := MemChan(7,1);
-'var pk2pk[1];
-'var code%[4],wvfrm[samps%];
-'var t := -1;
-'repeat
-'    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
-'    pk2pk[0] := ChanMeasure(wvmrkch%,10,t,t+samps%*BinSize(wvmrkch%));
-'    MemSetItem(tmphold%,0,t,code%,pk2pk[]); 
-'until t = -1;
-
-'ExportChanList();
-'ExportChanList(0, MaxTime(),tmphold%);
-'FileSaveAs("E:\\Spike_Sorting\\spike2temp\\holdpk2pk.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
-'ChanDelete(tmphold%);
 
 MarkMask(wvmrkch%,0,1,-1);
 end
@@ -636,14 +611,7 @@ View(filevw%);MoveTo(0,0,caretpos%);
 cntnr% := lastnrn%+1;
 
 View(timevw%);
-var howmany%[2];
-ChanList(howmany%[],16);
-
-if howmany%[0] = 1 then
-    wvmrkch% := howmany%[1];
-else
-    wvmrkch% := WvmrkChoose();
-endif;
+wvmrkch% := WvmrkChoose();
 
 var numcl := getWavemarkInfo(wvmrkch%,2);
 var class1%,class2%;

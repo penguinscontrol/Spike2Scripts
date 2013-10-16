@@ -17,10 +17,16 @@ classdef unit
         isi_bar
         isi_med
         isi_cv
+        freq_bar
+        freq_med
+        log_cv
+        fifth
         med_cv2
+        mean_cv2
         depth
         lm
         ap
+        fname
     end
     
     methods
@@ -29,13 +35,18 @@ classdef unit
                     strcmpi(lbl,'golgi')||...
                     strcmpi(lbl,'purkinje')||...
                     strcmpi(lbl,'dentate')||...
+                    strcmpi(lbl,'ub')||...
+                    strcmpi(lbl,'basket')||...
+                    strcmpi(lbl,'stellate')||...
+                    strcmpi(lbl,'granule')||...
+                    strcmpi(lbl,'border')||...
                     strcmpi(lbl,'fiber'))
                 error('Improper classification! Choose another name.')
             end
             ThisUnit.label = lbl;
         end
                 
-        function NewUnit = unit(label,maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,isi_cv,med_cv2,depth,lm,ap)
+        function NewUnit = unit(label,maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,isi_cv,freq_bar,freq_med,log_cv,fifth,med_cv2,mean_cv2,depth,lm,ap,fname)
                 NewUnit.label = label;
                 NewUnit.maxi = maxi;
                 NewUnit.mini = mini;
@@ -47,10 +58,16 @@ classdef unit
                 NewUnit.isi_bar = isi_bar;
                 NewUnit.isi_med = isi_med;
                 NewUnit.isi_cv = isi_cv;
+                NewUnit.freq_bar = freq_bar;
+                NewUnit.freq_med = freq_med;
+                NewUnit.log_cv = log_cv;
+                NewUnit.fifth = fifth;
                 NewUnit.med_cv2 = med_cv2;
+                NewUnit.mean_cv2 = mean_cv2;
                 NewUnit.depth = depth;
                 NewUnit.lm = lm;
                 NewUnit.ap = ap;
+                NewUnit.fname = fname;
         end
     end
     

@@ -1,6 +1,4 @@
-function out = data_prep(noise_est, plotting)
-
-global act_name;
+function out = data_prep(noise_est, plotting, act_name, f_name, cl)
 
 if strcmp(getenv('username'),'DangerZone')
         directory = 'E:\data\Recordings\';
@@ -31,22 +29,41 @@ eval(['waves = ', tn2,';']); % get data as a struct
 if ~isempty(act_name)
     subj = act_name;
 end
-clearvars -except waves subj coord depth noise_est tn2 plotting
+clearvars -except waves subj coord depth noise_est tn2 plotting f_name cl
 
 isi = diff(waves.times);
+
 isi_kurt = kurtosis(isi);
+
 isi_skew = skewness(isi);
+
 isi_std = std(isi);
+
 isi_bar = mean(isi);
+
 isi_med = median(isi);
+
 isi_cv = isi_std/isi_bar;
+
+inst_freq = isi.^(-1);
+freq_bar = mean(inst_freq);
+freq_med = median(inst_freq);
+
+log_isi = log(isi);
+log_std = std(log_isi);
+log_bar = mean(log_isi);
+log_cv = log_std/log_bar;
+
+fifth = prctile(isi,5);
 
 adjdiff = abs(diff(isi));
 isi_1 = isi(2:end);
 isi_0 = isi; isi_0(end) = [];
 adjsum = isi_1+isi_0;
 cv2 = 2.*adjdiff./adjsum;
+
 med_cv2 = median(cv2);
+mean_cv2 = mean(cv2);
 
 mu = mean(waves.values);
 [pks,pklocs] = findpeaks(mu);
@@ -98,5 +115,6 @@ if plotting
     plot((trlocs-1).*waves.interval,-trs,'r*');
 end
 
-out = unit('unclassified',maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,isi_cv,med_cv2,depth,coord.lm,coord.ap);
+fullname = [char(f_name) '_cl_' num2str(cl)];
+out = unit('unclassified',maxi,mini,pk2pk,wid,isi_kurt,isi_skew,isi_std,isi_bar,isi_med,isi_cv,freq_bar,freq_med,log_cv,fifth,med_cv2,mean_cv2,depth,coord.lm,coord.ap,fullname);
 end
