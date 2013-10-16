@@ -416,10 +416,13 @@ endif;
 ok% := MatlabPut("act_name",initial$);
 ok% := MatlabPut("f_name",thisname$);
 
+var codes%[codescnt%];
+GetCodes(wvmrkch%,codes%[]);     'get present codes
+
 var i%;
 for i% := 1 to codescnt% do
-    sendfeats(i%);
-    ok% := MatlabEval("cl_"+Str$(i%)+" = data_prep(noise_est,1,act_name,f_name,"+Str$(i%)+");");
+    sendfeats(codes%[i%-1]);
+    ok% := MatlabEval("cl_"+Str$(codes%[i%-1])+" = data_prep(noise_est,1,act_name,f_name,"+Str$(codes%[i%-1])+");");
     Message("Click to continue...");
 next;
 docase
@@ -536,7 +539,8 @@ else
 endcase;
 
 View(timevw%);
-MarkMask(wvmrkch%,0,1,-1);
+MarkMask(wvmrkch%,0,1,-1);    'include all codes
+MarkMask(wvmrkch%,0,0,0);     'exclude code 0
 ExportChanList(1); 'Initialise the channel list
 ExportChanList(0, MaxTime(),wvmrkch%);
 FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,
