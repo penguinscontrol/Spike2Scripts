@@ -18,7 +18,7 @@ if isprop(units(1,1),feat1)
     fib = [];
     
     ha = zeros(1,10);
-    for a = 1:r
+    for a = 1:c
         switch units(a).label
             case 'unclassified'
                 unc = [unc units(a).(feat1)];
@@ -103,7 +103,7 @@ if isprop(units(1,1),feat1)&&isprop(units(1,1),feat2)
     hold all;
     
     ha = zeros(1,10);
-    for a = 1:r
+    for a = 1:c
         if ~isempty(units(a))
         switch units(a).label
             case 'unclassified'
@@ -184,7 +184,7 @@ if isprop(units(1,1),feat1)&&isprop(units(1,1),feat2)&&isprop(units(1,1),feat3)
     hold all;
     
     ha = zeros(1,10);
-    for a = 1:r
+    for a = 1:c
         switch units(a).label
             case 'unclassified'
                 if ha(1) == 0
