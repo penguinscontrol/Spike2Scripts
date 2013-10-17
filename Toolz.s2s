@@ -21,5 +21,6 @@ ToolbarSet(14, "ToREXDataGUI",torex%);
 ToolbarSet(16, "Get Triggers",gettrigs%);
 ToolbarSet(18, "Feats2Mat",savefeats%);
 ToolbarSet(19, "VTr2Mat", vtrtogui%);
+ToolbarSet(20, "CombineWvMrk",combinewvm%);
 return Toolbar("Things you can do", 511);
 end;
