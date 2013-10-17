@@ -300,6 +300,9 @@ ok% := DlgShow(wvmrkch%);    'ok% is 0 if user cancels,  variables updated if no
 MarkMask(wvmrkch%, -1, 1, -1); 'Show all
 codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
 
+var codes%[codescnt%];
+GetCodes(wvmrkch%,codes%[]);     'get present codes
+
 var wavewin%[codescnt%];
 var a%, newname$,winl%;
 var t := -1;
@@ -308,13 +311,13 @@ for a% := 0 to codescnt%-1 do
     View(timevw%);
     
     MarkMask(wvmrkch%,0,0,-1);
-    MarkMask(wvmrkch%,0,1,a%+1);
+    MarkMask(wvmrkch%,0,1,codes%[a%]);
     t := -1;
     t := NextTime(wvmrkch%,t);
     if t <> -1 then
         winl% := MarkInfo(wvmrkch%); 'Convert number of samples in window to an int
         wavewin%[a%] := SetAverage(wvmrkch%, winl%,0,wvmrkch%,5,0);        'Get Inth
-        Process(0,MaxTime(),0,0);
+        Process(0,View(timevw%).MaxTime(),0,0);
         WindowVisible(1);
     
         View(wavewin%[a%]); 'set color
