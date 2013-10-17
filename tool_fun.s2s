@@ -742,7 +742,7 @@ endif;
 memch% := MemChan(6,samps1%,BinSize(ch1%),pre1%);
 wvm2mem(ch1%,memch%);
 wvm2mem(ch2%,memch%);
-
+ChanShow(memch%);
 return 1
 end;
 
