@@ -712,51 +712,6 @@ FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"v.mat",100,0,"",0,
 return 1
 
 end;
-
-func combinewvm%()
-var ok%,ch1%,ch2%,memch%,samps1%,samps2%,pre1%,pre2%;
-DlgCreate("Combine Wavemarks");
-DlgChan(1,"Please indicate first WaveMark:",131088);
-DlgChan(2,"Please indicate second WaveMark",131088);
-DlgButton(0,"Cancel");
-DlgButton(1,"OK");
-ok% := DlgShow(ch1%,ch2%);
-View(timevw%);
-samps1% := MarkInfo(ch1%,pre1%);
-samps2% := MarkInfo(ch2%,pre2%);
-
-if samps1% <> samps2% then
-    if samps2% > samps1% then
-        samps1% := samps2%;
-    endif;
-    Message("WARNING: Number of samples inconsistent. Using larger.");
-endif;
-if pre1% <> pre2% then
-    Message("WARNING: Number of pre-trigger points inconsistent. Using first channel.");
-endif;
-if BinSize(ch1%) <> BinSize(ch2%) then
-    Message("WARNING: Bin sizes inconsistent. Using first channel.");
-endif;
-
-memch% := MemChan(6,samps1%,BinSize(ch1%),pre1%);
-wvm2mem(ch1%,memch%);
-wvm2mem(ch2%,memch%);
-ChanShow(memch%);
-
-return 1
-
-end;
-
-proc wvm2mem(wvm%,memch%)
-var samp% := MarkInfo(wvm%);
-var i%,code%[4],wvfrm[samp%];
-var t := -1;
-repeat
-    t := NextTime(wvm%,t,code%[],wvfrm[]);
-    MemSetItem(memch%,0,t,code%[],wvfrm[]);        
-until t = -1;
-end;
-
 func findpwof2(in)
 var n%;
 while in >1 do
