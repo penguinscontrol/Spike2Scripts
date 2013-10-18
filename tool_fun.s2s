@@ -709,7 +709,6 @@ ExportChanList(0, MaxTime(),1);
 FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"v.mat",100,0,"",0,
 "UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
 
-
 return 1
 
 end;
@@ -727,7 +726,7 @@ samps1% := MarkInfo(ch1%,pre1%);
 samps2% := MarkInfo(ch2%,pre2%);
 
 if samps1% <> samps2% then
-    if samps2% > samps% then
+    if samps2% > samps1% then
         samps1% := samps2%;
     endif;
     Message("WARNING: Number of samples inconsistent. Using larger.");
@@ -743,12 +742,14 @@ memch% := MemChan(6,samps1%,BinSize(ch1%),pre1%);
 wvm2mem(ch1%,memch%);
 wvm2mem(ch2%,memch%);
 ChanShow(memch%);
+
 return 1
+
 end;
 
 proc wvm2mem(wvm%,memch%)
-var samps% := MarkInfo(wvm%);
-var i%,code%[4],wvfrm[samps%];
+var samp% := MarkInfo(wvm%);
+var i%,code%[4],wvfrm[samp%];
 var t := -1;
 repeat
     t := NextTime(wvm%,t,code%[],wvfrm[]);
