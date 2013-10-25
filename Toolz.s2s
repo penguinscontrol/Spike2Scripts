@@ -223,7 +223,7 @@ for a% := 0 to codescnt%-1 do
         ColourGet(1,codes%[a%],r,g,b);
         ChanColourSet(1,1,0,0,0);
         ChanColourSet(1,2,r,g,b);
-        newname$ := "Cluster "+Str$(a%+1);
+        newname$ := "Cluster "+Str$(codes%[a%]);
         WindowTitle$(newname$);
         FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(codes%[a%])+".jpeg",14);
     endif;
