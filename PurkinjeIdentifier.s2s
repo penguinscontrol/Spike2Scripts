@@ -242,16 +242,18 @@ tailchan% := MemChan(6,res,n*BinSize(wvmrkch%),res/2);
 
 var i%;
 repeat
-    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
-    View(timevw%).ChanData(1,cur[],t+samps%*BinSize(1),MaxTime());
+    t := NextTime(wvmrkch%,t,code%[],wvfrm[]);
+    View(timevw%).ChanData(1,cur[],t+samps%*View(timevw%).BinSize(1),MaxTime());
     
     for j := 0 to (res-1) do
         downcur[j] := cur[k];
         k += n;
     next;
     k := 0;
+    if t <> -1 then
+        MemSetItem(tailchan%,0,t,code%[],downcur[]);
+    endif;
     
-    MemSetItem(tailchan%,0,t,code%,downcur[]);        
 until t = -1;
 ChanShow(tailchan%);
 return 1
@@ -264,8 +266,10 @@ var code%[4],wvfrm[samps%];
 t := -1;
 
 repeat
-    t := NextTime(tailchan%,t,code%,wvfrm[]);
-    MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);    
+    t := NextTime(tailchan%,t,code%[],wvfrm[]);
+        if t <> -1 then
+            MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);
+        endif;        
 until t = -1;
 endif;
 return 1
@@ -299,9 +303,13 @@ cschan% := MemChan(6,extsz,BinSize(wvmrkch%),pre%);
 
 var i%;
 repeat
-    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    
+    t := NextTime(wvmrkch%,t,code%[],wvfrm[]);
     View(timevw%).ChanData(1,cur[],t,MaxTime());
-    MemSetItem(cschan%,0,t,code%,cur[]);        
+    if t <> -1 then
+        MemSetItem(cschan%,0,t,code%[],cur[]);
+    endif;
+    
 until t = -1;
 ChanShow(cschan%);
 return 1
@@ -314,8 +322,11 @@ var code%[4],wvfrm[samps%];
 t := -1;
 
 repeat
-    t := NextTime(cschan%,t,code%,wvfrm[]);
-    MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);    
+        t := NextTime(cschan%,t,code%[],wvfrm[]);
+        if t <> -1 then
+            MarkSet(wvmrkch%,t-BinSize(1),t+BinSize(1),code%[]);
+        endif;
+        
 until t = -1;
 endif;
 return 1
