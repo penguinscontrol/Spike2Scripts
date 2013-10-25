@@ -311,6 +311,9 @@ repeat
     endif;
     
 until t = -1;
+
+MarkMask(wvmrkch%,0,1,ssclus%);
+MarkMask(wvmrkch%,0,1,ccode%);
 ChanShow(cschan%);
 return 1
 end

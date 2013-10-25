@@ -1,4 +1,5 @@
-#include "tool_fun.s2s"
+#include "spike_manipulation_fnc.s2s"
+#include "noise_estimate_fcn.s2s"
 
 toolz();   'Try it out
 Halt;
@@ -24,6 +25,750 @@ ToolbarSet(19, "VTr2Mat", vtrtogui%);
 ToolbarSet(20, "CombineWvMrk",combinewvm%);
 return Toolbar("Things you can do", 511);
 end;
+
+Func idlefun%()   'Button 0 routine
+'Your code in here...
+return 1;  'This leaves toolbar active
+end;
+func movedist%()
+
+return 1;
+end;
+
+Func PredictPCA%()   'Button 1 routine
+wvmrkch% := WvmrkChoose();
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
+var scores[wcnt%][samps%], variances[samps%],components[samps%][samps%];
+ArrConst(scores[][],data[][]);
+PCA(0,scores[][],variances[],components[][]);
+return 0;  'This stops the toolbar
+end;
+
+func WvmrkChoose()
+var wavesch%,ok%;
+
+DlgCreate("Channel Selection");  'Start new dialog
+DlgChan(1,"Please indicate WaveMark channel",131088);
+
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(wavesch%);    'ok% is 0 if user cancels,  variables updated if not
+if ChanKind(wavesch%) = 6 then 'if ch% is a wavemark
+    PrintLog("You have selected channel ", wavesch%, " for analysis.\n");
+    return wavesch%;
+else
+    PrintLog("Unsuitable channel!\n");
+    halt;
+endif;
+
+end
+
+func NormTst(data[])
+var p, mu, std;
+ArrSum(data[],mu,std);
+
+return p;
+end
+
+func MyINTH%()   'INTH to XY View
+View(timevw%);
+wvmrkch% := WvmrkChoose();
+
+var binsz := 0.0005;
+var binco% := 200;
+
+myinthvw% := FileNew(12,0);
+var x[binco%],y[binco%];
+ArrConst(x[],binsz*1000); ArrIntgl(x[]);
+
+View(timevw%);
+var codescnt%;
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2);
+var i%, inthch%;
+var newname$;
+'var offset;
+for i%:= 0 to codescnt% do
+    View(timevw%);
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,i%);
+    SetINTH(wvmrkch%, binco%, binsz);
+    Process(0,View(timevw%).MaxTime(),0,1);
+    tempinthvw% := View();
+    ArrConst(y,View(tempinthvw%,1).[]);
+    View(tempinthvw%); FileClose(0,-1);
+    View(myinthvw%);
+    
+    if i% = 0 then
+        inthch% := 1;
+        XYSetChan(1,binco%,0,5);
+    else
+        inthch% := XYSetChan(0,binco%,0,5);
+    endif;
+   
+    XYAddData(inthch%,x[],y[]);
+    
+    var r,g,b;
+    ColourGet(1,i%,r,g,b);
+    ChanColourSet(i%+1,1,0,0,0);
+    ChanColourSet(i%+1,2,r,g,b);
+    
+    newname$ := "Cluster "+Str$(i%);
+    ChanTitle$(inthch%,newname$);
+    ChanShow(inthch%,0);
+next;
+ChanShow(2,1);
+XYKey(1,1); 'Show legend
+XYKey(4,80); 'Move legend to the right 80% of x range
+XYKey(5,10);
+Xunits$("ms");
+View(timevw%).MarkMask(wvmrkch%,0,1,-1);
+WindowVisible(1);
+return 1;
+end
+
+
+func MyINTH2%()    'INTH to Result View
+
+wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
+
+var binsz := 0.00025;  'How big the bin is, in s
+var binco% := 400;  'how many bins
+
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+SetResult((codescnt%+1),binco%,1000*binsz,0,"INTH", "ms", "", "ISI");
+myinthvw% := View();
+var i%;   'counter for for loo
+var newname$; 'Channel name
+
+for i%:= 0 to codescnt% do
+    
+    View(timevw%).MarkMask(wvmrkch%,0,0,-1); 'Show all
+    View(timevw%).MarkMask(wvmrkch%,0,1,i%); 'Isolate Current
+    
+    View(timevw%);
+    tempinthvw% := SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
+    Process(0,View(timevw%).MaxTime(),0,0);
+    
+    ArrConst(View(myinthvw%,i%+1).[],View(tempinthvw%,1).[]);      
+    View(tempinthvw%); FileClose(0,-1);
+    
+    View(myinthvw%);
+    var r,g,b;
+    ColourGet(1,i%,r,g,b);
+    ChanColourSet(i%+1,1,0,0,0);
+    ChanColourSet(i%+1,2,r,g,b);
+    newname$ := "Cluster "+Str$(i%);
+    ChanTitle$(i%+1,newname$);
+    ChanShow(i%+1);
+next;
+
+View(myinthvw%);
+Optimise(-1);
+XRange(0,50);
+WindowVisible(1);
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1);
+
+return 1;
+
+end
+
+func saveINTH%()
+
+var  binco%, ok%;
+var winl := 0.3;
+var binsz := 0.001;
+var thisname$ := FileName$(3)+FileName$(4);
+View(timevw%);
+
+DlgCreate("INTH Generator");  'Start new dialog
+DlgChan(1,"Please indicate WaveMark channel",131088);
+DlgReal(2, "Width (s)",0.05,5);
+DlgReal(3, "Bin size (s)",0.0001,0.5);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(wvmrkch%,winl,binsz);    'ok% is 0 if user cancels,  variables updated if not
+
+binco% := winl/binsz;
+
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+var codes%[codescnt%];
+GetCodes(wvmrkch%,codes%[]);     'get present codes
+
+var inthwin%[codescnt%];
+var a%, newname$;
+var t := -1;
+for a% := 0 to codescnt%-1 do
+
+    View(timevw%);
+    
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,codes%[a%]);
+    t := -1;
+    t := NextTime(wvmrkch%,t);
+    if t <> -1 and codes%[a%] <> 0 then        
+        inthwin%[a%] := SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
+        Process(0,MaxTime(),0,0);
+        WindowVisible(1);
+        Optimise(-1);
+    
+        View(inthwin%[a%]); 'set color
+        var r,g,b;
+        ColourGet(1,codes%[a%],r,g,b);
+        ChanColourSet(1,1,0,0,0);
+        ChanColourSet(1,2,r,g,b);
+        newname$ := "Cluster "+Str$(a%+1);
+        WindowTitle$(newname$);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(codes%[a%])+".jpeg",14);
+    endif;
+    
+;
+next;
+
+View(timevw%);
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
+
+return 1;
+end
+
+func snrfromfile%()
+var sig, thres, ampstd;
+View(timevw%);
+var ok%,wavesch%,vtrch%;
+DlgCreate("SNR Estimator");  'Start new dialog
+DlgChan(1,"Please indicate Voltage Trace",131585);
+DlgChan(2,"Please indicate WaveMark channel",131088);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(vtrch%,wavesch%);    'ok% is 0 if user cancels,  variables updated if not
+
+'Filter the raw signal 
+var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
+
+thres := getnoise(filtered%);
+ChanDelete(filtered%);
+
+wcnt% := View(timevw%).countwaves(wavesch%); 'count spikes;
+var amps[wcnt%]; 'save amplitudes to variable amps
+View(timevw%).extractFeatWave(wavesch%,amps[],1);
+ArrSum(amps[],sig,ampstd);
+Message("SNR is ", sig/thres);
+ChanDelete(filtered%);
+return 1
+
+end
+
+func waveavg%()
+wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+
+'var codescnt%;   'how many clusters
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+myavgvw% := SetResult((codescnt%+1),samps%,View(timevw%).Binsize(),0,"Average Waveform", "ms", "", "","",4);
+
+var i%, newname$, y[samps%];
+for i%:= 0 to codescnt% do
+    View(timevw%);
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,i%);
+    
+    tempavgvw% := SetAverage(wvmrkch%,samps%,0, wvmrkch%,5,0);
+    Process(0,View(timevw%).MaxTime(),0,0);
+    
+    ArrConst(View(myavgvw%,i%+1).[],View(tempavgvw%,1).[]); ' Copy values
+    View(tempavgvw%); 
+    BinError(1,0,y[],0);   'Copy from current average view....
+    View(myavgvw%);
+    Sweeps(10);   ' Sweeps has to be greater than 1: I don't know what sweeps is yet
+    BinError(i%+1,0,y[],10);  '... into new channel
+    View(tempavgvw%); FileClose(0,-1);
+    
+    View(myavgvw%);
+    var r,g,b;
+    ColourGet(1,i%,r,g,b);
+    ChanColourSet(i%+1,1,0,0,0);
+    ChanColourSet(i%+1,2,r,g,b);
+    newname$ := "Cluster "+Str$(i%);
+    ChanTitle$(i%+1,newname$);
+    DrawMode(i%+1,13,0,3); 'Set cubic spline
+    ChanPenWidth(i%+1,3);
+    ChanShow(i%+1);
+    
+next;
+
+View(myavgvw%);
+Optimise(-1);
+ChanHide(1);
+WindowVisible(1);
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1);
+return 1
+end
+
+func waveavg2%()
+
+var binsz, winl, binco%, ok%;
+var thisname$ := FileName$(3)+FileName$(4);
+View(timevw%);
+
+DlgCreate("Mean Waveform Generator");  'Start new dialog
+DlgChan(1,"Please indicate WaveMark channel",131088);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(wvmrkch%);    'ok% is 0 if user cancels,  variables updated if not
+
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+var codes%[codescnt%];
+GetCodes(wvmrkch%,codes%[]);     'get present codes
+
+var wavewin%[codescnt%];
+var a%, newname$,winl%;
+var t := -1;
+for a% := 0 to codescnt%-1 do
+
+    View(timevw%);
+    
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,codes%[a%]);
+    t := -1;
+    t := NextTime(wvmrkch%,t);
+    if t <> -1 and codes%[a%] <> 0 then
+        winl% := MarkInfo(wvmrkch%); 'Convert number of samples in window to an int
+        wavewin%[a%] := SetAverage(wvmrkch%, winl%,0,wvmrkch%,5,0);        'Get Inth
+        Process(0,View(timevw%).MaxTime(),0,0);
+        WindowVisible(1);
+    
+        View(wavewin%[a%]); 'set color
+        var r,g,b;
+        ColourGet(1,codes%[a%],r,g,b);
+        ChanColourSet(1,1,0,0,0);
+        ChanColourSet(1,2,r,g,b);
+        newname$ := "Cluster "+Str$(codes%[a%]);
+        WindowTitle$(newname$);
+        DrawMode(1,13,0,3); 'Set cubic spline
+        ChanPenWidth(1,3);
+        Optimise(-1);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_Wvfrm_cl_"+Str$(a%+1)+".jpeg",14);
+    endif;
+    
+;
+next;
+View(timevw%);
+MarkMask(wvmrkch%, -1, 1, -1); 'Show all
+
+return 1;
+end
+
+func wave3D%()
+
+wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
+
+MatLabOpen(1); 'Open a connection to Matlab
+
+var code%[4],wvfrm[samps%];
+var tmphold% := MemChan(7,samps%);
+
+var t := -1;
+
+var ok% := MatLabEval("clear; clc;");
+ok% := MatLabPut("tsamp",Binsize(1));
+View(timevw%);
+
+var i%;
+for i% := 1 to wcnt% do
+    t := NextTime(wvmrkch%,t,code%,wvfrm[]);
+    MemSetItem(tmphold%,0,t,code%,wvfrm[]);        
+next;
+
+ExportChanList(0, MaxTime(),tmphold%);
+FileSaveAs(ssdir$+"spike2temp\\for3Ddraw.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+
+var temppath$ := FilePath$(0);
+FilePathSet(ssdir$+"spike2temp\\",0);
+
+MatLabEval("spike2_shape_heat_map;");
+Message("Click to continue...");
+MatLabClose();
+ChanDelete(tmphold%);
+
+return 1
+end
+
+func savefeats%()
+
+var noise;
+View(timevw%);
+var ok%,vtrch%;
+DlgCreate("Features 2 Matlab");  'Start new dialog
+DlgChan(1,"Please indicate Voltage Trace",131585);
+DlgChan(2,"Please indicate WaveMark channel",131088);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(vtrch%,wvmrkch%);    'ok% is 0 if user cancels,  variables updated if not
+
+var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
+noise := getnoise(filtered%);
+ChanDelete(filtered%);
+
+codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2);
+samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
+var thisname$ := FileName$(3)+FileName$(4);
+
+var temppath$ := FilePath$(0);
+FilePathSet(ssdir$+"spike2temp\\",0);
+
+MatlabOpen(1);
+MatlabShow(1);
+MatlabEval("clear;clc;");
+ok% := MatlabPut("noise_est",noise);
+ok% := MatlabEval("noise_est = double(noise_est);");
+
+var initial$ := Left$(thisname$,1);
+if initial$ <> "R" and initial$ <> "S" and initial$ <> "H" then
+    
+    DlgCreate("Features 2 Matlab");
+    DlgString(1,"Please indicate subject initial: ",1);
+    DlgShow(initial$);
+    thisname$ := initial$+thisname$;
+endif;
+
+ok% := MatlabPut("act_name",initial$);
+ok% := MatlabPut("f_name",thisname$);
+
+var codes%[codescnt%];
+var t := -1;
+GetCodes(wvmrkch%,codes%[]);     'get present codes
+
+var i%;
+for i% := 0 to codescnt%-1 do
+    
+    View(timevw%);
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,codes%[i%]);
+    t := -1;
+    t := NextTime(wvmrkch%,t);
+    if ((t <> -1) and (codes%[i%] <> 0)) then
+        sendfeats(codes%[i%]);
+        ok% := MatlabEval("cl_"+Str$(codes%[i%])+" = data_prep(noise_est,1,act_name,f_name,"+Str$(codes%[i%])+");");
+        Message("Click to continue...");
+    endif;
+    
+next;
+docase
+case Left$(thisname$,1) = "R" then
+    MatlabEval("cd('"+ssdir$+"Rigel\\Features\\');");
+case Left$(thisname$,1) = "S" then
+    MatlabEval("cd('"+ssdir$+"Sixx\\Features\\');");
+case Left$(thisname$,1) = "H" then
+    MatlabEval("cd('"+ssdir$+"Hilda\\Features\\');");
+endcase;
+
+MatlabEval("clear act_name f_name;");
+MatlabEval("save('"+thisname$+"');");
+
+MatlabClose();
+MarkMask(wvmrkch%,0,1,-1);
+return 1
+end
+
+func sendfeats(curclus%)
+
+View(timevw%);
+'Waveforms
+ExportChanList(0, MaxTime(),wvmrkch%);
+FileSaveAs(ssdir$+"spike2temp\\holdwaves.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+end
+
+func gettrigs%()
+var trigch%,ok%;
+DlgCreate("SNR Estimator");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Trace",131585);
+
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trigch%);    'ok% is 0 if user cancels,  variables updated if not
+
+IIRCreate(-1, 1, 0, 4, 1000); 'IIR High pass Butterworth 1 kHz, fourth order
+var filttrigch% := IIRApply(-1, 0, trigch%, 0.000000, MaxTime(), 1); 'Apply created filter to a new channel
+ChanShow(filttrigch%);
+View(timevw%);
+if SSOpen() <> 0 then
+    View(SSOpen());
+    FileClose();
+    View(timevw%);
+endif;
+var newmark% := SSOpen(2,1);
+SSChan(filttrigch%); Draw();
+SSTempSizeSet(8,8,16,0); 'First number: how many samples right of the first one; Second number: how many samples in template? Third: How many samples in window; Fourth: How far into the window is 0
+SSParam(16, 32.00, 50, 20.00, 90.00, 2, 1, 128, 2, 31);
+View(ViewLink()).HCursorDelete(-1); 'Delete all horizontal cursors
+SSButton(9, 1); 'Enable exclusion cursors
+HCursor(1, -1.8); 'Set Wavemark low trigger level
+HCursor(2, 2); 'Set Wavemark high trigger level
+HCursor(3, -1.8); 'Set Wavemark low exclusion trigger level
+HCursor(4, 4); 'Set Wavemark high exclusion trigger level
+Draw();
+
+var ch%[2];   ' for channel specifications
+var ch2%; 'Channel for New WaveMark
+if View(ViewLink()).ChanList(ch%, 128) > 0 then 'If unused channels
+    ch2% := ch%[1];                 'use first
+    SSClassify(1, ch2%, 3);         'Create new WaveMark channel
+endif;
+FileClose();
+ChanShow(ch2%);
+ChanTitle$(ch2%, "trigger");
+ChanDelete(filttrigch%);
+return 1
+end
+
+func coldetect%()
+
+return 1
+end
+
+func torex%()
+
+var ok%,trch%;
+DlgCreate("Export for RexDataGUI");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Channel",131074);
+DlgChan(2,"Please indicate WaveMark Channel",131088);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trch%,wvmrkch%);    'ok% is 0 if user cancels,  variables updated if not
+if ok% = 0 then halt; endif;
+
+var thisname$ := FileName$(3)+FileName$(4);
+var subj$ := Left$(thisname$,1);
+
+    var subjects$[3],subchoice%;
+    subjects$[0] := "Rigel";
+    subjects$[1] := "Sixx";
+    subjects$[2] := "Hilda";
+
+docase
+case subj$ = "R" then
+    subj$ := subjects$[0];
+case subj$ = "S" then
+    subj$ := subjects$[1];
+case subj$ = "H" then
+    subj$ := subjects$[2];
+else 
+    DlgCreate("Export for REXDataGUI");
+    DlgList(1,"Which subject is this?",subjects$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    ok% := DlgShow(subchoice%);
+    if ok% = 0 then halt; endif;
+    subj$ := subjects$[subchoice%];   
+endcase;
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1);    'include all codes
+MarkMask(wvmrkch%,0,0,0);     'exclude code 0
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),wvmrkch%);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"s.mat",100,0,"",0,
+"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),trch%);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"t.mat",100,0,"",0,
+"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+ExportChanList(1); 'Initialise the channel list
+return 1
+end
+
+func gotogui%()
+MatlabOpen(1);
+MatlabEval("clear;clc;");
+MatLabShow(1);
+MatlabEval("RexDataGUI;");
+Message("Click to close GUI and continue...");
+MatLabClose();
+return 1
+end
+
+func add2pyel%()
+var ml,ap,dp;
+var thisname$ := FileName$(3)+FileName$(4)+".SMR";
+var initial$ := Left$(thisname$,1);
+
+if initial$ <> "R" and initial$ <> "S" and initial$ <> "H" then
+    DlgCreate("Features 2 Matlab");
+    DlgString(1,"Please indicate subject initial: ",1);
+    DlgShow(initial$);
+endif;
+
+var ok%;
+docase
+case initial$ = "R" then
+    ok% := FilePathSet(ssdir$+"Rigel\\",0);
+case initial$ = "S" then
+    ok% := FilePathSet(ssdir$+"Sixx\\",0);
+case initial$ = "H" then
+    ok% := FilePathSet(ssdir$+"Hilda\\",0);
+else
+    halt;
+endcase;
+
+var filevw% := FileOpen(initial$+"_"+"ExtElec"+".txt",2);
+var filevwlog% := FileOpen(initial$+"_"+"ExtElecLog"+".txt",2);
+
+MatLabOpen(1);
+MatlabShow(1);
+MatLabEval("cd("+FilePath$(0)+");");
+MatLabEval("clear;clc;");
+MatLabEval("[subj, coordlm, coordap, depth] = extract_info_pyel('"+thisname$+"');");
+MatlabGet("coordlm",ml);
+MatlabGet("coordap",ap);
+MatlabGet("depth",dp);
+MatlabClose();
+
+var lastnrn%,allelse$;
+var cntnr%;
+
+View(filevwlog%);
+ReadSetup(".","","","");
+
+while Read(lastnrn%,allelse$)>0 do
+wend;
+var caretpos% := MoveBy(0,0);
+
+ReadSetup();
+View(filevw%);MoveTo(0,0,caretpos%);
+
+cntnr% := lastnrn%+1;
+
+View(timevw%);
+wvmrkch% := WvmrkChoose();
+
+var numcl := getWavemarkInfo(wvmrkch%,2);
+var class1%,class2%;
+
+var j%;
+for j%:= 1 to numcl do
+        
+    ' write neuron coordinates
+    DlgCreate("Classifications");  'Start new dialog
+    DlgInteger(1,"Please indicate Classifier 1 for cell "+Str$(j%),1,32);
+    DlgInteger(2,"Please indicate Classifier 2 for cell "+Str$(j%),1,32);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"OK");
+    ok% := DlgShow(class1%,class2%);    'ok% is 0 if user cancels,  variables updated if not
+     
+    
+    View(filevw%).Print(Str$(class1%)+" "); 'classifications
+    View(filevw%).Print(Str$(class2%)+" ");
+
+    View(filevw%).Print(Str$(ml)+" "); 'coordinates
+    View(filevw%).Print(Str$(ap)+" ");
+    View(filevw%).Print(Str$(dp)+" ");
+    View(filevw%).Print(Str$(cntnr%)); ' current neuron
+    
+    View(filevw%).Print("\n");
+    
+    'write comments
+    
+    View(filevwlog%).Print(Str$(cntnr%)+". ");
+    View(filevwlog%).Print(thisname$+" ;");
+    var k%;
+    for k% := 1 to 5 do
+        View(filevwlog%).Print(View(timevw%).FileComment$(k%)+"  ;");
+    next;
+    View(filevwlog%).Print("\n");
+    cntnr% += 1;
+next;
+
+
+View(filevw%);
+FileSave();
+FileClose();
+View(filevwlog%);
+FileSave();
+FileClose();
+
+return 1;
+end
+
+func vtrtogui%()
+
+var ok%,trch%;
+DlgCreate("Export raw voltages");  'Start new dialog
+DlgChan(1,"Please indicate Trigger Channel",131074);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(trch%);    'ok% is 0 if user cancels,  variables updated if not
+if ok% = 0 then halt; endif;
+
+var thisname$ := FileName$(3)+FileName$(4);
+var subj$ := Left$(thisname$,1);
+
+    var subjects$[3],subchoice%;
+    subjects$[0] := "Rigel";
+    subjects$[1] := "Sixx";
+    subjects$[2] := "Hilda";
+
+docase
+case subj$ = "R" then
+    subj$ := subjects$[0];
+case subj$ = "S" then
+    subj$ := subjects$[1];
+case subj$ = "H" then
+    subj$ := subjects$[2];
+else 
+    DlgCreate("Export for REXDataGUI");
+    DlgList(1,"Which subject is this?",subjects$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    ok% := DlgShow(subchoice%);
+    if ok% = 0 then halt; endif;
+    subj$ := subjects$[subchoice%];   
+endcase;
+
+View(timevw%);
+ExportChanList(1); 'Initialise the channel list
+ExportChanList(0, MaxTime(),1);
+FileSaveAs(ssdir$+subj$+"\\Spike2Exports\\"+thisname$+"v.mat",100,0,"",0,
+"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0"); 'Export (string args)
+
+return 1
+
+end;
+func findpwof2(in)
+var n%;
+while in >1 do
+    in := in/2;
+    n% += 1;
+wend
+return n%-1;
+
+end
+
+func IntChoose(title$,msg$,lim)
+var ok%,int0%;
+DlgCreate(title$);
+DlgInteger(1,msg$,0,lim);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(int0%);
+return int0%
+end
+
+func quit%()
+return 0
+end
 
 func combinewvm%()
 var ok%,ch1%,ch2%,vch1%,vch2%,memch%,samps1%,samps2%,pre1%,pre2%;
