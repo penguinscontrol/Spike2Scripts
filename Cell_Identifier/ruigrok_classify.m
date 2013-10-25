@@ -7,7 +7,7 @@ end
 
 for a = 1:length(in)
     if strcmp(in(a).label,'unclassified')
-        if in(a).med_cv2 > 0.6-0.6./100.*[in(a).isi_med].^(-1)
+        if in(a).med_cv2 > 0.6-(0.6./100).*([in(a).isi_med].^(-1))
             in(a).label = 'purkinje';
         else
         end
