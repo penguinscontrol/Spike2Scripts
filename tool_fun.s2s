@@ -1,6 +1,3 @@
-#include "spike_manipulation_fnc.s2s"
-#include "noise_estimate_fcn.s2s"
-
 Func idlefun%()   'Button 0 routine
 'Your code in here...
 return 1;  'This leaves toolbar active
@@ -22,6 +19,7 @@ return 0;  'This stops the toolbar
 end;
 
 func WvmrkChoose()
+' Creates a dialog window to select the wavemark
 var wavesch%,ok%;
 
 DlgCreate("Channel Selection");  'Start new dialog
@@ -46,7 +44,7 @@ ArrSum(data[],mu,std);
 
 return p;
 end
-
+'%%%%%%%%%%%%%%%%%%%%%%%%NOT USED%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 func MyINTH%()   'INTH to XY View
 View(timevw%);
 wvmrkch% := WvmrkChoose();
@@ -151,8 +149,11 @@ MarkMask(wvmrkch%,0,1,-1);
 return 1;
 
 end
-
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 func saveINTH%()
+'Generates histograms of the ISI of individual clusters in the chosen Wavemark
+'Width describes the right edge of ISI lengths covered
+'Bin width describes the width of the bins
 
 var  binco%, ok%;
 var winl := 0.3;
@@ -162,16 +163,21 @@ View(timevw%);
 
 DlgCreate("INTH Generator");  'Start new dialog
 DlgChan(1,"Please indicate WaveMark channel",131088);
-DlgReal(2, "Width (s)",0.05,5);
-DlgReal(3, "Bin size (s)",0.0001,0.5);
+DlgReal(2, "Width (ms)",50,5000);
+DlgReal(3, "Bin size (ms)",0.1,500);
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(wvmrkch%,winl,binsz);    'ok% is 0 if user cancels,  variables updated if not
 
 binco% := winl/binsz;
+winl := 0.001*winl;
+binsz := 0.001*binsz;
 
 MarkMask(wvmrkch%, -1, 1, -1); 'Show all
 codescnt% := View(timevw%).getWavemarkInfo(wvmrkch%,2); 'get maximum cluster
+
+var codes%[codescnt%];
+GetCodes(wvmrkch%,codes%[]);     'get present codes
 
 var inthwin%[codescnt%];
 var a%, newname$;
@@ -181,23 +187,24 @@ for a% := 0 to codescnt%-1 do
     View(timevw%);
     
     MarkMask(wvmrkch%,0,0,-1);
-    MarkMask(wvmrkch%,0,1,a%+1);
+    MarkMask(wvmrkch%,0,1,codes%[a%]);
     t := -1;
     t := NextTime(wvmrkch%,t);
-    if t <> -1 then        
+    if t <> -1 and codes%[a%] <> 0 then        
         inthwin%[a%] := SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
+        XAxisStyle(4,0);
         Process(0,MaxTime(),0,0);
         WindowVisible(1);
         Optimise(-1);
     
         View(inthwin%[a%]); 'set color
         var r,g,b;
-        ColourGet(1,a%+1,r,g,b);
+        ColourGet(1,codes%[a%],r,g,b);
         ChanColourSet(1,1,0,0,0);
         ChanColourSet(1,2,r,g,b);
-        newname$ := "Cluster "+Str$(a%+1);
+        newname$ := "Cluster "+Str$(codes%[a%]);
         WindowTitle$(newname$);
-        FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(a%+1)+".jpeg",14);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(codes%[a%])+".jpeg",14);
     endif;
     
 ;
@@ -210,6 +217,9 @@ return 1;
 end
 
 func snrfromfile%()
+'Calculates the estimate of noise level in the file from the raw voltage trace channel (usually channel 1)
+'and the average amplitude of spikes in the wavemark channel. Returns the ratio of the two.
+
 var sig, thres, ampstd;
 View(timevw%);
 var ok%,wavesch%,vtrch%;
@@ -235,7 +245,7 @@ ChanDelete(filtered%);
 return 1
 
 end
-
+'%%%%%%%%%%%%%% NOT USED%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 func waveavg%()
 wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
 samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
@@ -285,6 +295,8 @@ MarkMask(wvmrkch%,0,1,-1);
 return 1
 end
 
+'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 func waveavg2%()
 
 var binsz, winl, binco%, ok%;
@@ -314,7 +326,7 @@ for a% := 0 to codescnt%-1 do
     MarkMask(wvmrkch%,0,1,codes%[a%]);
     t := -1;
     t := NextTime(wvmrkch%,t);
-    if t <> -1 then
+    if t <> -1 and codes%[a%] <> 0 then
         winl% := MarkInfo(wvmrkch%); 'Convert number of samples in window to an int
         wavewin%[a%] := SetAverage(wvmrkch%, winl%,0,wvmrkch%,5,0);        'Get Inth
         Process(0,View(timevw%).MaxTime(),0,0);
@@ -322,10 +334,10 @@ for a% := 0 to codescnt%-1 do
     
         View(wavewin%[a%]); 'set color
         var r,g,b;
-        ColourGet(1,a%+1,r,g,b);
+        ColourGet(1,codes%[a%],r,g,b);
         ChanColourSet(1,1,0,0,0);
         ChanColourSet(1,2,r,g,b);
-        newname$ := "Cluster "+Str$(a%+1);
+        newname$ := "Cluster "+Str$(codes%[a%]);
         WindowTitle$(newname$);
         DrawMode(1,13,0,3); 'Set cubic spline
         ChanPenWidth(1,3);
@@ -342,6 +354,7 @@ return 1;
 end
 
 func wave3D%()
+'3D view of stack of currently displayed waveforms
 
 wvmrkch% := View(timevw%).WvmrkChoose();  'Wavemark Channel
 samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
@@ -379,6 +392,8 @@ return 1
 end
 
 func savefeats%()
+'Saves a collection of features for every cluster to the \MonkeyName\Features folder
+'Raw voltage trace is used to estimate noise level of file
 
 var noise;
 View(timevw%);
@@ -420,13 +435,23 @@ ok% := MatlabPut("act_name",initial$);
 ok% := MatlabPut("f_name",thisname$);
 
 var codes%[codescnt%];
+var t := -1;
 GetCodes(wvmrkch%,codes%[]);     'get present codes
 
 var i%;
-for i% := 1 to codescnt% do
-    sendfeats(codes%[i%-1]);
-    ok% := MatlabEval("cl_"+Str$(codes%[i%-1])+" = data_prep(noise_est,1,act_name,f_name,"+Str$(codes%[i%-1])+");");
-    Message("Click to continue...");
+for i% := 0 to codescnt%-1 do
+    
+    View(timevw%);
+    MarkMask(wvmrkch%,0,0,-1);
+    MarkMask(wvmrkch%,0,1,codes%[i%]);
+    t := -1;
+    t := NextTime(wvmrkch%,t);
+    if ((t <> -1) and (codes%[i%] <> 0)) then
+        sendfeats(codes%[i%]);
+        ok% := MatlabEval("cl_"+Str$(codes%[i%])+" = data_prep(noise_est,1,act_name,f_name,"+Str$(codes%[i%])+");");
+        Message("Click to continue...");
+    endif;
+    
 next;
 docase
 case Left$(thisname$,1) = "R" then
@@ -441,23 +466,21 @@ MatlabEval("clear act_name f_name;");
 MatlabEval("save('"+thisname$+"');");
 
 MatlabClose();
+MarkMask(wvmrkch%,0,1,-1);
 return 1
 end
 
 func sendfeats(curclus%)
 
 View(timevw%);
-MarkMask(wvmrkch%,0,0,-1);
-MarkMask(wvmrkch%,0,1,curclus%);
-
 'Waveforms
 ExportChanList(0, MaxTime(),wvmrkch%);
 FileSaveAs(ssdir$+"spike2temp\\holdwaves.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
-
-MarkMask(wvmrkch%,0,1,-1);
 end
 
 func gettrigs%()
+'Converts an analog TTL trace to a collection of time points
+
 var trigch%,ok%;
 DlgCreate("SNR Estimator");  'Start new dialog
 DlgChan(1,"Please indicate Trigger Trace",131585);
@@ -506,7 +529,7 @@ return 1
 end
 
 func torex%()
-
+'Saves the trigger times from Trigger Channel and the Spike times from Wavemark Channel
 var ok%,trch%;
 DlgCreate("Export for RexDataGUI");  'Start new dialog
 DlgChan(1,"Please indicate Trigger Channel",131074);
@@ -557,6 +580,7 @@ return 1
 end
 
 func gotogui%()
+'Opens the GUI
 MatlabOpen(1);
 MatlabEval("clear;clc;");
 MatLabShow(1);
@@ -567,6 +591,8 @@ return 1
 end
 
 func add2pyel%()
+'Adds an entry to the text file that contains the list of neurons for display in pyElectrode
+
 var ml,ap,dp;
 var thisname$ := FileName$(3)+FileName$(4)+".SMR";
 var initial$ := Left$(thisname$,1);
@@ -669,6 +695,7 @@ return 1;
 end
 
 func vtrtogui%()
+'saves the raw voltage trace to disk as a .mat file
 
 var ok%,trch%;
 DlgCreate("Export raw voltages");  'Start new dialog
@@ -732,6 +759,60 @@ ok% := DlgShow(int0%);
 return int0%
 end
 
+func combinewvm%()
+'Creates a Wavemark combining spikes from Voltage trace 1 at times from Wavemark 1 and
+'spikes from Voltage Trace 2 to Wavemark 2.
+var ok%,ch1%,ch2%,vch1%,vch2%,memch%,samps1%,samps2%,pre1%,pre2%;
+DlgCreate("Combine Wavemarks");
+DlgChan(1,"Please indicate first WaveMark:",131088);
+DlgChan(2,"Please indicate first voltage trace:",513);
+DlgChan(3,"Please indicate second WaveMark:",131088);
+DlgChan(4,"Please indicate second voltage trace",513);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(ch1%,vch1%,ch2%,vch2%);
+View(timevw%);
+samps1% := MarkInfo(ch1%,pre1%);
+samps2% := MarkInfo(ch2%,pre2%);
+
+var offset%;
+if samps1% <> samps2% then
+    if samps2% > samps1% then
+        samps1% := samps2%;
+    endif;
+    Message("WARNING: Number of samples inconsistent. Using larger.");
+endif;
+if pre1% <> pre2% then
+    offset% := pre1%-pre2%;
+    Message("WARNING: Number of pre-trigger points inconsistent. Realigning.");
+endif;
+
+if BinSize(vch1%) <> BinSize(vch2%) then
+    Message("WARNING: Bin sizes inconsistent. Unable to merge.");
+    return 0;
+endif;
+
+memch% := MemChan(6,samps1%,BinSize(ch1%),pre1%);
+wvm2mem(ch1%,vch1%,memch%,samps1%,0);
+wvm2mem(ch2%,vch2%,memch%,samps1%,offset%);
+ChanShow(memch%);
+
+return 1
+
+end;
+
+proc wvm2mem(wvm%,vtr%,memch%,samp%,offset%)
+'Gets timestamps from wvm%, a Wavemark channel, collects samp% data points from
+' the signal in channel vtr%, offset by offset% data points and saves them to the memory channel memch%
+var i%,code%[4],wvfrm[samp%];
+var t := -1;
+var toffset := View(timevw%).BinSize(vtr%)*offset%;
+repeat
+    t := NextTime(wvm%,t,code%[],wvfrm[]);
+    View(timevw%).ChanData(vtr%,wvfrm[],t-toffset,MaxTime());
+    MemSetItem(memch%,0,t-toffset,code%[],wvfrm[]);        
+until t = -1;
+end;
 func quit%()
 return 0
 end

@@ -2,3 +2,4 @@
 var fdirs$ := FileName$(1)+FileName$(2); 'current file directory
 var pdirs$ := Left$(fdirs$,Len(fdirs$)-5); 'parent directory
 'var githubpath$ := "C:\\Users\\Radu\\Documents\\GitHub\\";
+

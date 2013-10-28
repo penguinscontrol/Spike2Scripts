@@ -1,0 +1,26 @@
+var ssdir$;
+
+var curpath$ := FileName$(1)+FileName$(2);
+var ind%;
+
+if InStr(curpath$,"Sixx") then
+    ind% := InStr(curpath$,"Sixx");    
+endif;
+
+if InStr(curpath$,"Hilda") then
+    ind% := InStr(curpath$,"Hilda");   
+endif;
+
+if InStr(curpath$,"Rigel") then
+    ind% := InStr(curpath$,"Rigel");   
+endif;
+
+if InStr(curpath$,"Shuffles") then
+    ind% := InStr(curpath$,"Shuffles");   
+endif;
+
+if ind% <> 0 then
+    ssdir$ := Left$(curpath$,ind%-1);
+else
+    ssdir$ := curpath$;
+endif;

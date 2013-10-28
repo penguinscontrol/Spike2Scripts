@@ -11,18 +11,12 @@ timevw% := View();
 ToolbarClear();     'Remove any old buttons
 ToolbarSet(0, "", idlefun%);   'Idle routine
 ToolbarSet(1, "Quit",quit%);
-ToolbarSet(3, "Move Displaced||Not working",movedist%);
-ToolbarSet(4, "&PredictPCA||Not working", PredictPCA%);   'Link to function
-ToolbarSet(6, "Collision Detection||Not working",coldetect%);
 ToolbarSet(7, "INTH||INTH for each cluster",saveINTH%);
 ToolbarSet(8, "SNR||Ratio of amplitudes to noise",snrfromfile%);
 ToolbarSet(9, "Waveform||Average and standard deviation of waveforms",waveavg2%);
-ToolbarSet(11, "3D||3D stack of displayed waveforms",wave3D%);
 ToolbarSet(12, "Add to PyEl", add2pyel%);
-ToolbarSet(13, "REXDataGUI||Open the GUI",gotogui%);
 ToolbarSet(14, "ToREXDataGUI||Save s and t files",torex%);
 ToolbarSet(16, "Get Triggers||convert analog trace to events+",gettrigs%);
-ToolbarSet(18, "Feats2Mat||Export features to Matlab",savefeats%);
 ToolbarSet(19, "VTr2Mat||Save raw voltage trace", vtrtogui%);
 ToolbarSet(20, "CombineWvMrk||Combine 2 Wavemarks",combinewvm%);
 return Toolbar("Things you can do", 511);
