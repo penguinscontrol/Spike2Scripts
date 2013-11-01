@@ -1,3 +1,4 @@
+#include "set_path.s2s"
 #include "spike_manipulation_fnc.s2s"
 #include "noise_estimate_fcn.s2s"
 

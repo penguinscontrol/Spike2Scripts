@@ -144,7 +144,7 @@ FilePathSet(ssdir$+"spike2temp\\",0);
 
 ok% := MatLabPut("timelength",View(timevw%).MaxTime());
 ok% := MatLabPut("ssclus",ssclus%);
-ok% := MatLabPut("tsamp",View(timevw%).Binsize());
+ok% := MatLabPut("tsamp",View(timevw%).Binsize(1));
 MatLabEval("PurkinjeIdentifier;");
 var newlabels[wcnt%];
 ok% := MatLabGet("mynewlabels",newlabels[]);
