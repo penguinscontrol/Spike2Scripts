@@ -161,8 +161,8 @@ func saveINTH%()
 'Bin width describes the width of the bins
 
 var  binco%, ok%;
-var winl := 0.3;
-var binsz := 0.001;
+var winl := 300;
+var binsz := 0.5;
 var thisname$ := FileName$(3)+FileName$(4);
 View(timevw%);
 
@@ -198,7 +198,7 @@ for a% := 0 to codescnt%-1 do
     if t <> -1 and codes%[a%] <> 0 then        
         inthwin%[a%] := SetINTH(wvmrkch%, binco%, binsz);        'Get Inth
         XAxisStyle(4,0);
-        Process(0,MaxTime(),0,0);
+        Process(0,View(timevw%).MaxTime(),0,1);
         WindowVisible(1);
         Optimise(-1);
     
