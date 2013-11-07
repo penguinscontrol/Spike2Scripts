@@ -236,7 +236,7 @@ DlgButton(1,"OK");
 ok% := DlgShow(vtrch%,wavesch%);    'ok% is 0 if user cancels,  variables updated if not
 
 'Filter the raw signal 
-var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
+var filtered% := View(timevw%).filterraw(vtrch%,300,9000);          '... save a filtered version of channel 1 to it.
 
 thres := getnoise(filtered%);
 ChanDelete(filtered%);
@@ -410,7 +410,7 @@ DlgButton(0,"Cancel");
 DlgButton(1,"OK");
 ok% := DlgShow(vtrch%,wvmrkch%);    'ok% is 0 if user cancels,  variables updated if not
 
-var filtered% := View(timevw%).filterraw(vtrch%);          '... save a filtered version of channel 1 to it.
+var filtered% := View(timevw%).filterraw(vtrch%,300,9000);          '... save a filtered version of channel 1 to it.
 noise := getnoise(filtered%);
 ChanDelete(filtered%);
 

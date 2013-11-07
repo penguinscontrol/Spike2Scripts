@@ -7,6 +7,7 @@ var ssz := View(timevw%).Floor(tsz/Binsize(1)); 'how many samples is tsz
 var fsz% := Pow(2,findpwof2(ssz)); 'how many samples in the fft
 var asz% := fsz%/2+1; 'number of samples corresponding to amplitude of fft
 
+var sigchan% := 10; 'Where is the signal?
 var ccode% := 31; 'code for complex spike
 var ssclus%; 'code for simple spikes
 var tailchan%; 'channel to hold the tsz long waveform after each simple spike
@@ -32,8 +33,13 @@ main();
 halt;
 
 func main()
-wvmrkch% := WvmrkChoose();
-ssclus% := IntChoose("Purkinje Finder","Please select a simple spike cluster",64);
+wvmrkch% := WvmrkChoose();    
+    DlgCreate("Init");  'Start new dialog 
+    DlgChan(1,"Signal:",1);
+    DlgInteger(2,"Simple Spikes:",0,3000);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"OK");
+    var ok% := DlgShow(sigchan%,ssclus%);    'ok% is 0 if user cancels,  variables updated if not
 ccode% := ssclus% + 30;
 MarkMask(wvmrkch%,0,0,-1); 'hide all spikes
 MarkMask(wvmrkch%,0,1,ssclus%); ' show ss
@@ -64,7 +70,7 @@ end
 proc drawfft(t,code%[],wvfrm[],cur[],fft[],update%);
 if t <> -1 then
     
-    View(timevw%).ChanData(1,cur[],t+samps%*BinSize(1),MaxTime());
+    View(timevw%).ChanData(sigchan%,cur[],t+samps%*BinSize(1),MaxTime());
 
     ArrConst(View(wavw%,1).[],cur[]); 'copy waveform to chan 1 of result view
     
@@ -94,7 +100,7 @@ func nex%()
 var code%[4],wvfrm[samps%];
 var cur[ssz];
 var fft[asz%]; 
-
+View(timevw%);
 t := NextTime(wvmrkch%,t,code%,wvfrm[]);
 drawfft(t,code%[],wvfrm[],cur[],fft[],1);
 
@@ -105,6 +111,7 @@ func previ%()
 var code%[4],wvfrm[samps%];
 var cur[ssz];
 var fft[asz%]; 
+View(timevw%); 
 
 t := LastTime(wvmrkch%,t,code%,wvfrm[]);
 drawfft(t,code%[],wvfrm[],cur[],fft[],1);
@@ -243,7 +250,7 @@ tailchan% := MemChan(6,res,n*BinSize(wvmrkch%),res/2);
 var i%;
 repeat
     t := NextTime(wvmrkch%,t,code%[],wvfrm[]);
-    View(timevw%).ChanData(1,cur[],t+samps%*View(timevw%).BinSize(1),MaxTime());
+    View(timevw%).ChanData(sigchan%,cur[],t+samps%*View(timevw%).BinSize(1),MaxTime());
     
     for j := 0 to (res-1) do
         downcur[j] := cur[k];
@@ -305,7 +312,7 @@ var i%;
 repeat
     
     t := NextTime(wvmrkch%,t,code%[],wvfrm[]);
-    View(timevw%).ChanData(1,cur[],t,MaxTime());
+    View(timevw%).ChanData(sigchan%,cur[],t,MaxTime());
     if t <> -1 then
         MemSetItem(cschan%,0,t,code%[],cur[]);
     endif;

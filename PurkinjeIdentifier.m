@@ -34,7 +34,7 @@ data_fft = fft(data);
 
 mynewlabels = ones(1,cls).*double(ssclus);
         
-whatttodo = 'pauses';
+whatttodo = 'fft_max_sd';
 switch whatttodo
     case 'fft_max_1hz'
         

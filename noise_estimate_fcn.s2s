@@ -14,8 +14,8 @@ noise := median(data[])/0.6745;
 return noise;
 end
 
-func filterraw(src%)
-IIRCreate(-1, 2, 0, 4, 300, 9000); 'IIR Band pass Butterworth 0.3 to 9 kHz, fourth order
+func filterraw(src%, low%, high%)
+IIRCreate(-1, 2, 0, 4, low%, high%); 'IIR Band pass Butterworth 0.3 to 9 kHz, fourth order
 var dest% := IIRApply(-1, 0, src%, 0.000000, MaxTime(), 1); 'Apply created filter to a new channel
 ChanShow(dest%);
 return dest%;
@@ -24,6 +24,7 @@ end
 func openwavem(ch%,thres,stdmin,stdmax)
 '' Open a new wavemark
 var newmark% := SSOpen(2,1);
+View(newmark%);
 SSChan(ch%); Draw();
 
 '' Set wavemark parameters

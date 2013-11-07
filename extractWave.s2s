@@ -2,6 +2,7 @@
 #include "spike_manipulation_fnc.s2s"
 #include "noise_estimate_fcn.s2s"
 
+var sigchan% := 10;
 var newmark%; 'view for the new wavemark
 var filtered%; 'Channel for filtered voltage trace
 
@@ -19,13 +20,26 @@ FilePathSet(ssdir$,0);
 
 timevw% := FileOpen("",0,3); 'Open a file for processing
 WindowVisible(3);
+var low% := 300;
+var high% := 9000;
 
+    DlgCreate("Filtering");  'Start new dialog 
+    DlgChan(1,"Signal:",1);
+    DlgInteger(2,"High Pass (Hz):",0,3000);
+    DlgInteger(3,"Low Pass (Hz):",3000,20000);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"OK");
+    var ok% := DlgShow(sigchan%,low%,high%);    'ok% is 0 if user cancels,  variables updated if not
+     
 'Filter the raw signal
-filtered% := filterraw(1);          '... save a filtered version of channel 1 to it.
+filtered% := filterraw(sigchan%,low%,high%);          '... save a filtered version of channel 1 to it.
 thres := View(timevw%).getnoise(filtered%);
 newmark% := View(timevw%).openwavem(filtered%,thres,stdmin,stdmax); 'Open a new wavemark dialogue
 
-Interact("Press OK to get SNR estimate",4607);
+ToolbarClear();     'Remove any old buttons
+ToolbarSet(1, "Quit",quit%);
+ToolbarSet(0, "", waitclose%);   'Idle routine
+Toolbar("Waiting...",4607);
 
 var dummych%, dummychvec%[2]; 'convoluted method to extract higest numbered wavemark, assuming it's the one you just created.
 if View(timevw%).ChanList(dummychvec%, 16) > 0 then 'If wavemarks exist
@@ -49,4 +63,23 @@ var amps[wcnt%], sig, ampstd; 'save amplitudes to variable amps
 View(timevw%).extractFeatWave(wvmrkch%,amps[],1);
 ArrSum(amps[],sig,ampstd);
 Message("SNR is ", sig/thres);
+
+var pre%;
+var samps% := MarkInfo(wvmrkch%,pre%);
+var memch% := MemChan(6,samps%,BinSize(sigchan%),pre%);
+
 end
+
+
+func quit%()
+return 0
+end;
+
+func waitclose%()
+var state% := 1;
+if (SSopen(-1) = 0) then
+    state% := 0;
+endif;
+
+return state%;
+end 
