@@ -806,6 +806,48 @@ return 1
 
 end;
 
+func combineselected%()
+'Creates a Wavemark combining spikes from Voltage trace 1 at times from Wavemark 1 and
+'spikes from Voltage Trace 2 to Wavemark 2.
+var ok%,ch1%,ch2%,vch1%,vch2%,memch%,samps1%,samps2%,pre1%,pre2%;
+DlgCreate("Combine Wavemarks");
+DlgChan(1,"Please indicate first WaveMark:",131088);
+DlgChan(2,"Please indicate first voltage trace:",513);
+DlgChan(3,"Please indicate second WaveMark:",131088);
+DlgChan(4,"Please indicate second voltage trace",513);
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(ch1%,vch1%,ch2%,vch2%);
+View(timevw%);
+samps1% := MarkInfo(ch1%,pre1%);
+samps2% := MarkInfo(ch2%,pre2%);
+
+var offset%;
+if samps1% <> samps2% then
+    if samps2% > samps1% then
+        samps1% := samps2%;
+    endif;
+    Message("WARNING: Number of samples inconsistent. Using larger.");
+endif;
+if pre1% <> pre2% then
+    offset% := pre1%-pre2%;
+    Message("WARNING: Number of pre-trigger points inconsistent. Realigning.");
+endif;
+
+if BinSize(vch1%) <> BinSize(vch2%) then
+    Message("WARNING: Bin sizes inconsistent. Unable to merge.");
+    return 0;
+endif;
+
+memch% := MemChan(6,samps1%,BinSize(ch1%),pre1%);
+wvm2mem(ch1%,vch1%,memch%,samps1%,0);
+wvm2mem(ch2%,vch2%,memch%,samps1%,offset%);
+ChanShow(memch%);
+
+return 1
+
+end;
+
 proc wvm2mem(wvm%,vtr%,memch%,samp%,offset%)
 'Gets timestamps from wvm%, a Wavemark channel, collects samp% data points from
 ' the signal in channel vtr%, offset by offset% data points and saves them to the memory channel memch%
