@@ -73,7 +73,8 @@ memch% := MemChan(6,samp%,BinSize(filtered%),pre%);
 iter% := 0
 
 for iter% := 1 to seg% do
-wvm2mem(pieces%[iter%-1],filtered%,memch%,samp%);
+    wvm2mem(pieces%[iter%-1],filtered%,memch%,samp%);
+    ChanDelete(pieces%[iter%-1]);
 next;
 
 permch%:= ChanSave(memch%,0,0,0,MaxTime(sigchan%));
