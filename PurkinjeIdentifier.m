@@ -1,3 +1,11 @@
+
+
+% Variables from Spike2, uncomment for debugging
+clear;clc;
+ssclus = 1;
+timelength = 1238.53;
+tsamp = 2e-5;
+
 if strcmp(getenv('username'),'DangerZone')
         directory = 'E:\data\Recordings\';
     elseif strcmp(getenv('username'),'Radu')
@@ -15,10 +23,6 @@ cd([directory, 'spike2temp\']);
 
 load('postss.mat'); % post simple spike data
 
-% Variables from Spike2, uncomment for debugging
-ssclus = 1;
-timelength = 1238.53;
-tsamp = 2e-5;
 
 tn1 = whos; % temporary name holder
 tn2 = tn1.name;
@@ -34,7 +38,7 @@ data_fft = fft(data);
 
 mynewlabels = ones(1,cls).*double(ssclus);
         
-whatttodo = 'default';
+whatttodo = 'normal_mixtures';
 switch whatttodo
     case 'fft_max_1hz'
         % Assuming average complex spike firing is at 1 Hz, their number
@@ -136,13 +140,17 @@ switch whatttodo
         % data => 3 shape features
         
         % Calculate the energy of the signal => 1 feature
-        
+        energies = sum(data.^2)./tsamp; energies = energies';
+        energies = energies./max(energies);
         % Calculate the percent of the energy in low frequencies as opposed
         % to high. Problem: define low frequency. 1 feature
         
         % Calculate time to next spike. 1 feature.
+        pauses = diff(datastr.times); pauses = [pauses; 0];
+        pauses = pauses./max(pauses);
         
-        
+        hold on;
+        scatter(pauses,energies);
     otherwise %fft_max_sd
         
         data_fft_amp = abs(data_fft(1:(floor(rws/2)+1),:)); %get fft amplitudes for positive frequencies
@@ -163,4 +171,5 @@ switch whatttodo
 end
 
 % Display pause diagram
+figure(3);
 pausediagram(datastr.times, mynewlabels);
