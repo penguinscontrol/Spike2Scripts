@@ -34,7 +34,7 @@ data_fft = fft(data);
 
 mynewlabels = ones(1,cls).*double(ssclus);
         
-whatttodo = 'pauses';
+whatttodo = 'default';
 switch whatttodo
     case 'fft_max_1hz'
         % Assuming average complex spike firing is at 1 Hz, their number
@@ -162,4 +162,5 @@ switch whatttodo
         
 end
 
-% Calculate pause-ness of diagram
+% Display pause diagram
+pausediagram(datastr.times, mynewlabels);
