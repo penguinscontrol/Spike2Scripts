@@ -1,31 +1,35 @@
 ' Which channels are we looking at?
-var ok%,ch1%,vch1%,memch%,permch%,samps1%,pre1%,newsamp%;
+var ok%,ch1%,vch1%,memch%,permch%,samps1%,pre1%,after,before,newsamp%,newpre%;
 
 DlgCreate("Combine Wavemarks");
-DlgChan(1,"Please indicate WaveMark:",131088);
-DlgChan(2,"Please indicate voltage trace:",513);
-DlgInteger(3,"New sample size?",1,1024);
+DlgChan(1,"Please indicate WaveMark:",131088); 'Handle returned in ch1%
+DlgChan(2,"Please indicate voltage trace:",513); 'Handle returned in vch1% 
+DlgReal(3,"Additional time before (ms):",0,100); 'Handle returned in before%
+DlgReal(4,"Additional time after (ms):",0,100); 'Handle returned in after%
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
-ok% := DlgShow(ch1%,vch1%,newsamp%);
-samps1% := MarkInfo(ch1%,pre1%);
-memch% := MemChan(6,newsamp%,BinSize(vch1%),pre1%);
+ok% := DlgShow(ch1%,vch1%,before,after);
 
-wvm2mem(ch1%,vch1%,memch%,newsamp%);
+samps1% := MarkInfo(ch1%,pre1%);         
+newsamp% := before/(1000*Binsize(vch1%)) + after/(1000*Binsize(vch1%)) + samps1%;
+newpre% := before/(1000*Binsize(vch1%))+pre1%;
+memch% := MemChan(6,newsamp%,BinSize(vch1%),newpre%);
+
+wvm2mem(ch1%,vch1%,memch%,newsamp%,before);
 
 permch%:= ChanSave(memch%,0,0,0,MaxTime(vch1%));
-ChanTitle$(permch%,"New Wvmrk");
+ChanTitle$(permch%,"New Wavemark");
 ChanDelete(memch%);
 ChanShow(permch%);
 
-proc wvm2mem(wvm%,vtr%,memch%,samp%)
+proc wvm2mem(wvm%,vtr%,memch%,samp%,before)
 'Gets timestamps from wvm%, a Wavemark channel, collects samp% data points from
 ' the signal in channel vtr%, offset by offset% data points and saves them to the memory channel memch%
 var i%,code%[4],wvfrm[samp%];
 var t := -1;
 repeat
     t := NextTime(wvm%,t,code%[],wvfrm[]);
-    ChanData(vtr%,wvfrm[],t,MaxTime());
-    MemSetItem(memch%,0,t,code%[],wvfrm[]);        
+    ChanData(vtr%,wvfrm[],t-before/1000,MaxTime());
+    MemSetItem(memch%,0,t-before/1000,code%[],wvfrm[]);        
 until t = -1;
 end;

@@ -23,16 +23,16 @@ for a = 1:no_cs
     end
 end
 
-maxtimes = cellfun(@max,post_cs,'UniformOutput', false);
-maxtimes = maxtimes(~cellfun(@isempty,maxtimes));
-bins = 0:max(cell2mat(maxtimes))+1;
+maxtimes = cellfun(@max,post_cs,'UniformOutput', false); % How long is each inter-CS period?
+maxtimes = maxtimes(~cellfun(@isempty,maxtimes)); % what's the longest of those?
+bins = 0:max(cell2mat(maxtimes))+1; % bins for the longest time length
 
 raster_lines = zeros(no_cs, length(bins));
 for a = 1:no_cs
     raster_lines(a,:) = hist(post_cs{a},bins);
 end
 
-raster_lines = raster_lines(:,1:100);
+raster_lines = raster_lines(:,1:100); % Isolate first 100 ms
 
 [indy, indx] = ind2sub(size(raster_lines),find(raster_lines)); %find row and column coordinates of spikes
         %indy = -indy+size(cut_rasters,1); % flip so that the top raster plots on the top

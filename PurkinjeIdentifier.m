@@ -1,10 +1,10 @@
 
 
 % Variables from Spike2, uncomment for debugging
-clear;clc;
-ssclus = 1;
-timelength = 1238.53;
-tsamp = 2e-5;
+ clear;clc;close all;
+ ssclus = 1;
+ timelength = 1238.53;
+ tsamp = 2e-5;
 
 if strcmp(getenv('username'),'DangerZone')
         directory = 'E:\data\Recordings\';
@@ -142,15 +142,21 @@ switch whatttodo
         % Calculate the energy of the signal => 1 feature
         energies = sum(data.^2)./tsamp; energies = energies';
         energies = energies./max(energies);
+        [muhat,sigmahat] = normfit(energies');
+        energy_cutoff = muhat+sigmahat;
         % Calculate the percent of the energy in low frequencies as opposed
         % to high. Problem: define low frequency. 1 feature
         
         % Calculate time to next spike. 1 feature.
         pauses = diff(datastr.times); pauses = [pauses; 0];
         pauses = pauses./max(pauses);
+        [muhat,sigmahat] = normfit(pauses');
+        pauses_cutoff = muhat+sigmahat;
         
         hold on;
-        scatter(pauses,energies);
+        scatter(pauses,energies,'bo');
+        mynewlabels(pauses >= pauses_cutoff & energies >= energy_cutoff) = ssclus+30;
+        scatter(pauses(pauses >= pauses_cutoff & energies >= energy_cutoff),energies(pauses >= pauses_cutoff & energies >= energy_cutoff),'r+');
     otherwise %fft_max_sd
         
         data_fft_amp = abs(data_fft(1:(floor(rws/2)+1),:)); %get fft amplitudes for positive frequencies
