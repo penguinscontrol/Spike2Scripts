@@ -63,21 +63,21 @@ if View(timevw%).ChanList(dummychreal%, 16) > 0 then 'If wavemarks exist
 endif;
     
 
-pieces%[iter%-1] := wvmrkch%;
+pieces%[iter%-1] := wvmrkch%;       ' ID of wavemark containing this segment's waves
     
     
 next;
 
 samp% := MarkInfo(wvmrkch%,pre%);
 memch% := MemChan(6,samp%,BinSize(filtered%),pre%);
-iter% := 0
+iter% := 0;
 
 for iter% := 1 to seg% do
     wvm2mem(pieces%[iter%-1],filtered%,memch%,samp%);
     ChanDelete(pieces%[iter%-1]);
 next;
 
-permch%:= ChanSave(memch%,0,0,0,MaxTime(sigchan%));
+permch%:= ChanSave(memch%,0,0,0,MaxTime(sigchan%));      ' Channel to save all the pieces to
 ChanTitle$(permch%,"New Wvmrk");
 ChanDelete(memch%);
 ChanShow(permch%);
@@ -103,9 +103,9 @@ until t = -1;
 end;
 
 func waitclose%()
-var state% := 1;
-if (SSopen(-1) = 0) then
-    state% := 0;
+var state% := 1;      'Stay open
+if (SSopen(-1) = 0) then        ' Is the new wavemark dialogue still open?
+    state% := 0;               'time to close
 endif;
 
 return state%;
