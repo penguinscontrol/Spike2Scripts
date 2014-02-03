@@ -1,4 +1,5 @@
 var samps% := 32; 'how many samples per waveform?
+var pre%; ' how many samples before zero in the waveform
 var wcnt%; 'Count waveforms
 var wvmrkch%; 'wavemark channel identifier
 var codescnt%;   'how many clusters

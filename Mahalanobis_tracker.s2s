@@ -1,0 +1,56 @@
+#include "tool_fun.s2s"
+
+var t := -1;
+timevw% := View();
+
+var sigchan% := 10; 'Where is the signal?
+main();
+halt;
+
+func main()
+var wvmrkch%, TMStimes%;  ' Indicate wavemark channel
+var ok%;
+
+DlgCreate("Channel Selection");  'Start new dialog
+DlgChan(1,"Please indicate WaveMark channel",131088);
+DlgInteger(2,"TMS cluster (0 if none):",0,3000);
+
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(wvmrkch%,TMStimes%); 
+
+samps% := MarkInfo(wvmrkch%,pre%);  'how many samples long is the wavemark channel?
+
+
+MatLabOpen(1); 'Open a connection to Matlab
+ok% := MatLabEval("clear; clc;");
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1); ' Show all 
+ExportChanList(0, MaxTime(),wvmrkch%);
+FileSaveAs(ssdir$+"spike2temp\\mahala.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+
+var temppath$ := FilePath$(0);
+FilePathSet(ssdir$+"spike2temp\\",0);
+' We need to acces the template boundaries
+var ssvw% := SSOpen(-1);
+if (ssvw% = 0) then  ' Is an SS window open?
+    ssvw% := SSOpen(1);        ' If not, open one
+endif;
+View(ssvw%); ' And make it the current view 
+SSChan(wvmrkch%);         ' Set the SS window to the channel of interest
+var tempsize%, start%, show%;
+tempsize% := SSTempSizeGet(start%, show%, pre%);
+FileClose();
+View(timevw%);
+
+ok% := MatLabPut("timelength",View(timevw%).MaxTime());
+ok% := MatLabPut("pulse_clus",TMStimes%);
+ok% := MatLabPut("temp_size",tempsize%);
+ok% := MatLabPut("start_offset",start%);
+ok% := MatLabPut("tsamp",View(timevw%).Binsize(1));
+MatLabShow(1);
+MatLabEval("Mahalanobis_tracker;");
+Interact("Press when done examining output.",1023);
+MatLabClose();
+end

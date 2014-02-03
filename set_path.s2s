@@ -18,6 +18,9 @@ endif;
 if InStr(curpath$,"Shuffles") then
     ind% := InStr(curpath$,"Shuffles");   
 endif;
+if InStr(curpath$,"TMS") then
+    ind% := InStr(curpath$,"TMS");   
+endif;
 
 if ind% <> 0 then
     ssdir$ := Left$(curpath$,ind%-1);
