@@ -22,14 +22,17 @@ clus = cell(length(clusnames),1); % will hold times and PCA scores for each clus
 gauss_fits = cell(length(clusnames),1); % will hold the parameters of
                                         % the multivariate gaussian
                                         % approximating the clusters
-score_mask = ismember(1:size(score,2),comps);
+score_mask = ismember(1:size(score,2),comps); % which components are we using?
+                                              % i.e., which component space
+                                              % to calculate mahalanobis
+                                              % distance in
 a = 1;
 for a = 1:length(clusnames) % populate clus with times and PCA scores for each cluster
-    b = clusnames(a);
-    clus{a} = struct('times',data.times(cluscodes == b),...
+    b = clusnames(a); % current cluster name
+    clus{a} = struct('times',data.times(cluscodes == b),... % times of that clus
         'scores', score(cluscodes == b,score_mask),'mahal_distance',[]);
-    gauss_fits{a} = gmdistribution.fit(clus{a}.scores(:,score_mask),1);
-    clus{a}.mahal_distance = mahal(gauss_fits{a},clus{a}.scores);    
+    gauss_fits{a} = gmdistribution.fit(clus{a}.scores(:,score_mask),1); % multivariate fit to that cluster
+    clus{a}.mahal_distance = mahal(gauss_fits{a},clus{a}.scores);    % calculate distances from data points to center of fit
 end
 
 for a = 1:length(clusnames)
@@ -41,14 +44,12 @@ for a = 1:length(clusnames)
         plot(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),'k.','MarkerSize',5);
         hold on;
         x_limits = [gauss_fits{a}.mu(1)-4.*sqrt(gauss_fits{a}.Sigma(1,1)) gauss_fits{a}.mu(1)+4.*sqrt(gauss_fits{a}.Sigma(1,1))];
-        
+        % 4 standard deviations on either side of the mean
         y_limits = [gauss_fits{a}.mu(2)-4.*sqrt(gauss_fits{a}.Sigma(2,2)) gauss_fits{a}.mu(2)+4.*sqrt(gauss_fits{a}.Sigma(2,2))];
     
         h = ezcontour(@(x,y)pdf(gauss_fits{a},[x y]),x_limits,y_limits);
         subplot(2,1,2);
     end
-    
-    
     sdf=fullgauss_filtconv(clus{a}.mahal_distance, sigma, 1);
     sdf=sdf./max(sdf).*(max(clus{a}.mahal_distance).*0.4);
     plot(clus{a}.times, clus{a}.mahal_distance, 'k.','MarkerSize',5);
