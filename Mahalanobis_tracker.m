@@ -1,13 +1,12 @@
 
-
-% Variables from Spike2, uncomment for debugging
+% 
+% % Variables from Spike2, uncomment for debugging
 %  clear;clc;close all;
-%  pulse_clus = 1;
-%  timelength = 1238.54678;
+%  pulse_clus = 0;
+%  timelength = 89.9119;
 %  tsamp = 2e-5;
-%  temp_size = 35;
-%  start_offset = 10;
- comps = [1 2 3];
+%  temp_size = 32;
+%  start_offset = 12;
 
 if strcmp(getenv('username'),'DangerZone')
         directory = 'E:\data\Recordings\';
@@ -24,4 +23,6 @@ end
 
 cd([directory, 'spike2temp\']);
 
-plot_mahalanobis('mahala.mat',temp_size, start_offset,pulse_clus,comps);
+sigma = 5;
+comps = [1 2]; % Which components to look at?
+plot_mahalanobis('mahala.mat',double(temp_size),double(start_offset),double(pulse_clus),comps,sigma);

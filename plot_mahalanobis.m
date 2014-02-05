@@ -1,4 +1,4 @@
-function [ out ] = plot_mahalanobis(in, temp_size, start_offset, pulse_clus,comps)
+function clus = plot_mahalanobis(in, temp_size, start_offset, pulse_clus,comps, sigma)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 load(in);
@@ -34,20 +34,26 @@ end
 
 for a = 1:length(clusnames)
     figure();
-    whichtoplot = randi(size(clus{a}.scores,1),1,5000);
+    whichtoplot = randperm(size(clus{a}.scores,1));
+    whichtoplot = whichtoplot(1:min(5e2,size(clus{a}.scores,1)));
     if length(comps) == 2
-        subplot(1,2,1);
-        scatter(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),5,'k.');
+        subplot(2,1,1);
+        plot(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),'k.','MarkerSize',5);
         hold on;
         x_limits = [gauss_fits{a}.mu(1)-4.*sqrt(gauss_fits{a}.Sigma(1,1)) gauss_fits{a}.mu(1)+4.*sqrt(gauss_fits{a}.Sigma(1,1))];
         
         y_limits = [gauss_fits{a}.mu(2)-4.*sqrt(gauss_fits{a}.Sigma(2,2)) gauss_fits{a}.mu(2)+4.*sqrt(gauss_fits{a}.Sigma(2,2))];
     
         h = ezcontour(@(x,y)pdf(gauss_fits{a},[x y]),x_limits,y_limits);
-        subplot(1,2,2);
+        subplot(2,1,2);
     end
-    scatter(clus{a}.times, clus{a}.mahal_distance, 5, 'k.');
+    
+    
+    sdf=fullgauss_filtconv(clus{a}.mahal_distance, sigma, 1);
+    sdf=sdf./max(sdf).*(max(clus{a}.mahal_distance).*0.4);
+    plot(clus{a}.times, clus{a}.mahal_distance, 'k.','MarkerSize',5);
     hold on;
+    plot(clus{a}.times, sdf, 'r-','LineWidth',5);
 end
 
 end
