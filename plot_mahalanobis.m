@@ -37,18 +37,11 @@ end
 
 for a = 1:length(clusnames)
     figure();
-<<<<<<< HEAD
     whichtoplot = randperm(size(clus{a}.scores,1));
     whichtoplot = whichtoplot(1:min(5e2,size(clus{a}.scores,1)));
     if length(comps) == 2
         subplot(2,1,1);
         plot(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),'k.','MarkerSize',5);
-=======
-    whichtoplot = randi(size(clus{a}.scores,1),1,5000); % only plot 5000 data points, for speed
-    if length(comps) == 2 % if there are only 2 components, we can plot a contour of them.
-        subplot(1,2,1);
-        scatter(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),5,'k.');
->>>>>>> 668e8a4aa8e1be9b7d5f1cd5e72bbfc3f81bae80
         hold on;
         x_limits = [gauss_fits{a}.mu(1)-4.*sqrt(gauss_fits{a}.Sigma(1,1)) gauss_fits{a}.mu(1)+4.*sqrt(gauss_fits{a}.Sigma(1,1))];
         % 4 standard deviations on either side of the mean
@@ -57,14 +50,9 @@ for a = 1:length(clusnames)
         h = ezcontour(@(x,y)pdf(gauss_fits{a},[x y]),x_limits,y_limits);
         subplot(2,1,2);
     end
-<<<<<<< HEAD
     sdf=fullgauss_filtconv(clus{a}.mahal_distance, sigma, 1);
     sdf=sdf./max(sdf).*(max(clus{a}.mahal_distance).*0.4);
     plot(clus{a}.times, clus{a}.mahal_distance, 'k.','MarkerSize',5);
-=======
-    % plot distance from center over time.
-    scatter(clus{a}.times, clus{a}.mahal_distance, 5, 'k.');
->>>>>>> 668e8a4aa8e1be9b7d5f1cd5e72bbfc3f81bae80
     hold on;
     plot(clus{a}.times, sdf, 'r-','LineWidth',5);
 end
