@@ -51,10 +51,16 @@ for a = 1:length(clusnames)
         subplot(2,1,2);
     end
     sdf=fullgauss_filtconv(clus{a}.mahal_distance, sigma, 1);
-    sdf=sdf./max(sdf).*(max(clus{a}.mahal_distance).*0.4);
-    plot(clus{a}.times, clus{a}.mahal_distance, 'k.','MarkerSize',5);
-    hold on;
-    plot(clus{a}.times, sdf, 'r-','LineWidth',5);
+    sdf=sdf./max(abs(sdf)).*(max(abs(clus{a}.mahal_distance)).*0.4);
+    h(1) = plot(clus{a}.times, clus{a}.mahal_distance, 'k-','LineWidth',2,'DisplayName','Mahalanobis distance');
+    hold all;
+    h(2) = plot(clus{a}.times, sdf,'LineWidth',2,'DisplayName','Smoothed Mahalanobis Distance');
+    for b = 1:length(comps)
+%         h(b+2) = plot(clus{a}.times,...
+%             clus{a}.scores(:,b)./max(abs(clus{a}.scores(:,b))).*max(abs(clus{a}.mahal_distance)).*0.4,...
+%             'LineWidth',2,'DisplayName',['Component ' num2str(comps(b))]);
+    end
+    legend(h,0);
 end
 
 end
