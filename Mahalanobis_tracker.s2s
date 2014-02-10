@@ -9,15 +9,17 @@ halt;
 
 func main()
 var wvmrkch%, TMStimes%;  ' Indicate wavemark channel
+var sigma := 1;
 var ok%;
 
 DlgCreate("Channel Selection");  'Start new dialog
 DlgChan(1,"Please indicate WaveMark channel",131088);
 DlgInteger(2,"TMS cluster (0 if none):",0,3000);
+DlgReal(3,"Smoothing kernel width (s):",0,10);
 
 DlgButton(0,"Cancel");
 DlgButton(1,"OK");
-ok% := DlgShow(wvmrkch%,TMStimes%); 
+ok% := DlgShow(wvmrkch%,TMStimes%,sigma); 
 
 samps% := MarkInfo(wvmrkch%,pre%);  'how many samples long is the wavemark channel?
 
@@ -45,6 +47,7 @@ FileClose();
 View(timevw%);
 
 ok% := MatLabPut("timelength",View(timevw%).MaxTime());
+ok% := MatLabPut("sigma",sigma);
 ok% := MatLabPut("pulse_clus",TMStimes%);
 ok% := MatLabPut("temp_size",tempsize%);
 ok% := MatLabPut("start_offset",start%);

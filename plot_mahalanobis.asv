@@ -1,4 +1,4 @@
-function clus = plot_mahalanobis(in, temp_size, start_offset, pulse_clus,comps, sigma)
+function clus = plot_mahalanobis(in, temp_size, start_offset, pulse_clus,comps, sigma,plotting_vis)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 load(in);
@@ -26,40 +26,65 @@ score_mask = ismember(1:size(score,2),comps); % which components are we using?
                                               % i.e., which component space
                                               % to calculate mahalanobis
                                               % distance in
-a = 1;
+
 for a = 1:length(clusnames) % populate clus with times and PCA scores for each cluster
     b = clusnames(a); % current cluster name
-    clus{a} = struct('times',data.times(cluscodes == b),... % times of that clus
+    clus{a} = struct('times',round(data.times(cluscodes == b).*1000),... % times of that clus in ms
         'scores', score(cluscodes == b,score_mask),'mahal_distance',[]);
-    gauss_fits{a} = gmdistribution.fit(clus{a}.scores(:,score_mask),1); % multivariate fit to that cluster
+    gauss_fits{a} = gmdistribution.fit(clus{a}.scores,1); % multivariate fit to that cluster
     clus{a}.mahal_distance = mahal(gauss_fits{a},clus{a}.scores);    % calculate distances from data points to center of fit
 end
 
-for a = 1:length(clusnames)
+for a = 1:length(clusnames) % for each cluster, plot distance from center and scores through time
     figure();
-    whichtoplot = randperm(size(clus{a}.scores,1));
-    whichtoplot = whichtoplot(1:min(5e2,size(clus{a}.scores,1)));
-    if length(comps) == 2
-        subplot(2,1,1);
-        plot(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),'k.','MarkerSize',5);
+    count_plots = length(comps)+1; % one subplot for each component plus the mahal dist
+    cur_plot = 1; % current subplot window
+    if plotting_vis % plot the visual cluster, first two components specified in comps[]
+        whichtoplot = randperm(size(clus{a}.scores,1)); % Choose at most 500 points in this view to speed it up
+        whichtoplot = whichtoplot(1:min(5e2,size(clus{a}.scores,1)));
+        count_plots = count_plots+1; % add a plot for the gaussian fit
+        score_mask = ismember(1:size(score,2),comps(1:2)); %restrict to first two components only
+        gauss_fits_4plot = cell(length(clusnames),1);
+        for c = 1:length(clusnames) 
+            b = clusnames(c); % current cluster name
+            gauss_fits_4plot{c} = gmdistribution.fit(score(cluscodes == b,score_mask),1); % multivariate fit to that cluster
+        end
+        subplot(count_plots,1,cur_plot);
+        h(cur_plot) = plot(clus{a}.scores(whichtoplot,1),clus{a}.scores(whichtoplot,2),'k.','MarkerSize',5); % scatter plot of cluster in first 2 components space
         hold on;
-        x_limits = [gauss_fits{a}.mu(1)-4.*sqrt(gauss_fits{a}.Sigma(1,1)) gauss_fits{a}.mu(1)+4.*sqrt(gauss_fits{a}.Sigma(1,1))];
+        x_limits = [gauss_fits_4plot{a}.mu(1)-4.*sqrt(gauss_fits_4plot{a}.Sigma(1,1))...
+            gauss_fits_4plot{a}.mu(1)+4.*sqrt(gauss_fits_4plot{a}.Sigma(1,1))];
         % 4 standard deviations on either side of the mean
-        y_limits = [gauss_fits{a}.mu(2)-4.*sqrt(gauss_fits{a}.Sigma(2,2)) gauss_fits{a}.mu(2)+4.*sqrt(gauss_fits{a}.Sigma(2,2))];
+        y_limits = [gauss_fits_4plot{a}.mu(2)-4.*sqrt(gauss_fits_4plot{a}.Sigma(2,2))...
+            gauss_fits_4plot{a}.mu(2)+4.*sqrt(gauss_fits_4plot{a}.Sigma(2,2))];
     
-        h = ezcontour(@(x,y)pdf(gauss_fits{a},[x y]),x_limits,y_limits);
-        subplot(2,1,2);
+        ezcontour(@(x,y)pdf(gauss_fits_4plot{a},[x y]),x_limits,y_limits);
+        title('Cluster ')
+        cur_plot = cur_plot+1;
     end
-<<<<<<< HEAD
-    sdf=fullgauss_filtconv(clus{a}.mahal_distance, sigma, 1);
+    padded_time = clus{a}.times(1):clus{a}.times(end);
+    padded_mahal = zeros(length(padded_time),1);
+    padded_mahal(ismember(padded_time,clus{a}.times))=clus{a}.mahal_distance;
+    sdf=fullgauss_filtconv(padded_mahal, sigma, 0);
     sdf=sdf./max(sdf).*(max(clus{a}.mahal_distance).*0.4);
-    plot(clus{a}.times, clus{a}.mahal_distance, 'k.','MarkerSize',5);
-=======
-    % plot distance from center over time.
-    scatter(clus{a}.times, clus{a}.mahal_distance, 5, 'k.');
->>>>>>> 668e8a4aa8e1be9b7d5f1cd5e72bbfc3f81bae80
+    subplot(count_plots,1,cur_plot);
+    h(cur_plot) = plot(clus{a}.times, clus{a}.mahal_distance, 'k.','MarkerSize',5);
     hold on;
-    plot(clus{a}.times, sdf, 'r-','LineWidth',5);
+    plot(padded_time, sdf, 'r-','LineWidth',5);
+    cur_plot = cur_plot+1;
+    
+    for c = 1:length(comps)
+        subplot(count_plots,1,cur_plot);
+        these_scores = clus{a}.scores(:,c)-mean(clus{a}.scores(:,c));
+        h(cur_plot) = plot(clus{a}.times, these_scores, 'k.','MarkerSize',5);
+        hold on;
+        padded_score = zeros(length(padded_time),1);
+        padded_score(ismember(padded_time,clus{a}.times))=these_scores;
+        sdf=fullgauss_filtconv(padded_score, sigma, 0);
+        sdf=sdf./max(sdf).*(max([these_scores;abs(these_scores)]).*0.4);
+        plot(padded_time, sdf, 'r-','LineWidth',5);
+        cur_plot = cur_plot+1;
+    end
 end
 
 end

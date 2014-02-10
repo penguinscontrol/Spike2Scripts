@@ -6,6 +6,7 @@
 %  timelength = 89.9119;
 %  tsamp = 2e-5;
 %  temp_size = 32;
+%  sigma = 1;
 %  start_offset = 12;
 
 if strcmp(getenv('username'),'DangerZone')
@@ -22,7 +23,6 @@ if strcmp(getenv('username'),'DangerZone')
 end
 
 cd([directory, 'spike2temp\']);
-
-sigma = 5;
-comps = [1 2]; % Which components to look at?
-plot_mahalanobis('mahala.mat',double(temp_size),double(start_offset),double(pulse_clus),comps,sigma);
+sigma = 1000.*sigma; % Convert sigma from seconds to milliseconds
+comps = [1 2 3]; % Which components to look at?
+plot_mahalanobis('mahala.mat',double(temp_size),double(start_offset),double(pulse_clus),comps,sigma,1);
