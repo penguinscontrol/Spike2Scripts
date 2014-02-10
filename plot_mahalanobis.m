@@ -62,6 +62,7 @@ for a = 1:length(clusnames) % for each cluster, plot distance from center and sc
         title(sprintf('X axis: Component %d score Y axis: Component %d score',comps(1),comps(2)));
         cur_plot = cur_plot+1;
     end
+<<<<<<< HEAD
     padded_time = clus{a}.times(1):clus{a}.times(end); % add entries for all intermediate times, for smoothing
     padded_mahal = zeros(length(padded_time),1); % add zeros for smoothing
     padded_mahal(ismember(padded_time,clus{a}.times))=clus{a}.mahal_distance;
@@ -87,6 +88,19 @@ for a = 1:length(clusnames) % for each cluster, plot distance from center and sc
         title(sprintf('X axis: Time (ms) Y axis: Component %d score',comps(c)));
         cur_plot = cur_plot+1;
     end
+=======
+    sdf=fullgauss_filtconv(clus{a}.mahal_distance, sigma, 1);
+    sdf=sdf./max(abs(sdf)).*(max(abs(clus{a}.mahal_distance)).*0.4);
+    h(1) = plot(clus{a}.times, clus{a}.mahal_distance, 'k-','LineWidth',2,'DisplayName','Mahalanobis distance');
+    hold all;
+    h(2) = plot(clus{a}.times, sdf,'LineWidth',2,'DisplayName','Smoothed Mahalanobis Distance');
+    for b = 1:length(comps)
+%         h(b+2) = plot(clus{a}.times,...
+%             clus{a}.scores(:,b)./max(abs(clus{a}.scores(:,b))).*max(abs(clus{a}.mahal_distance)).*0.4,...
+%             'LineWidth',2,'DisplayName',['Component ' num2str(comps(b))]);
+    end
+    legend(h,0);
+>>>>>>> dff5ef96fb8aab8ef586696694ebd9029b303b2c
 end
 
 end

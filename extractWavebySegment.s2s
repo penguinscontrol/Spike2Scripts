@@ -1,0 +1,112 @@
+#include "set_path.s2s"
+#include "spike_manipulation_fnc.s2s"
+#include "noise_estimate_fcn.s2s"
+
+var sigchan% := 10;
+var newmark%; 'view for the new wavemark
+var filtered%; 'Channel for filtered voltage trace
+
+var memch%,permch%,samp%;
+
+var thres; 'Default spike detection threshold, waveclus style
+var stdmin := 3; var stdmax := 12; 'multipliers for wave_clus noise estimate
+
+var sr := 40000; 'Sampling rate
+
+main();
+halt;
+
+proc main()
+
+FilePathSet(ssdir$,0);
+
+timevw% := FileOpen("",0,3); 'Open a file for processing
+
+var seglength% := 1200;
+var seg% := Ceil(View(timevw%).MaxTime()/seglength%);
+
+
+WindowVisible(3);
+var low% := 300;
+var high% := 9000;
+
+    DlgCreate("Filtering");  'Start new dialog 
+    DlgChan(1,"Signal:",1);
+    DlgInteger(2,"High Pass (Hz):",0,3000);
+    DlgInteger(3,"Low Pass (Hz):",3000,20000);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"OK");
+var ok% := DlgShow(sigchan%,low%,high%);    'ok% is 0 if user cancels,  variables updated if not
+
+var pieces%[seg%];
+
+var iter%;
+for iter% := 1 to seg% do
+'Filter the raw signal
+filtered% := filterrawseg(sigchan%,low%,high%,seglength%*(iter%-1),seglength%*iter%);          '... save a filtered version of channel 1 to it.
+thres := View(timevw%).getnoise(filtered%);
+newmark% := View(timevw%).openwavem(filtered%,thres,stdmin,stdmax); 'Open a new wavemark dialogue
+
+ToolbarClear();     'Remove any old buttons
+ToolbarSet(1, "Quit",quit%);
+ToolbarSet(0, "", waitclose%);   'Idle routine
+Toolbar("Waiting...",4607);
+
+var dummych%, dummychvec%[2]; 'convoluted method to extract higest numbered wavemark, assuming it's the one you just created.
+if View(timevw%).ChanList(dummychvec%, 16) > 0 then 'If wavemarks exist
+    dummych% := View(ViewLink()).ChanList(dummychvec%, 16)+1;                 'get their number and then
+endif;                                          
+var dummychreal%[dummych%];                                                 'make a vector to hold all of them
+if View(timevw%).ChanList(dummychreal%, 16) > 0 then 'If wavemarks exist
+    dummychreal%[0] := 0;                 'discard first entry
+    wvmrkch% := dummychreal%[Max(dummychreal%)];                  'get latest wavemark
+endif;
+    
+
+pieces%[iter%-1] := wvmrkch%;       ' ID of wavemark containing this segment's waves
+    
+    
+next;
+
+samp% := MarkInfo(wvmrkch%,pre%);
+memch% := MemChan(6,samp%,BinSize(filtered%),pre%);
+iter% := 0;
+
+for iter% := 1 to seg% do
+    wvm2mem(pieces%[iter%-1],filtered%,memch%,samp%);
+    ChanDelete(pieces%[iter%-1]);
+next;
+
+permch%:= ChanSave(memch%,0,0,0,MaxTime(sigchan%));      ' Channel to save all the pieces to
+ChanTitle$(permch%,"New Wvmrk");
+ChanDelete(memch%);
+ChanShow(permch%);
+
+end
+
+
+func quit%()
+return 0
+end;
+
+
+proc wvm2mem(wvm%,vtr%,memch%,samp%)
+'Gets timestamps from wvm%, a Wavemark channel, collects samp% data points from
+' the signal in channel vtr%, offset by offset% data points and saves them to the memory channel memch%
+var i%,code%[4],wvfrm[samp%];
+var t := -1;
+repeat
+    t := NextTime(wvm%,t,code%[],wvfrm[]);
+    ChanData(vtr%,wvfrm[],t,MaxTime());
+    MemSetItem(memch%,0,t,code%[],wvfrm[]);        
+until t = -1;
+end;
+
+func waitclose%()
+var state% := 1;      'Stay open
+if (SSopen(-1) = 0) then        ' Is the new wavemark dialogue still open?
+    state% := 0;               'time to close
+endif;
+
+return state%;
+end 

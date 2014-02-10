@@ -24,7 +24,6 @@ end
 func filterrawseg(src%, low%, high%,start%,stop%)
 IIRCreate(-1, 2, 0, 4, low%, high%); 'IIR Band pass Butterworth 0.3 to 9 kHz, fourth order
 var dest% := IIRApply(-1, 0, src%, start%, stop%, 1); 'Apply created filter to a new channel
-ChanShow(dest%);
 return dest%;
 end
 
