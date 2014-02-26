@@ -30,9 +30,10 @@ score_mask = ismember(1:size(score,2),comps); % which components are we using?
 for a = 1:length(clusnames) % populate clus with times and PCA scores for each cluster
     b = clusnames(a); % current cluster name
     clus{a} = struct('times',round(data.times(cluscodes == b).*1000),... % times of that clus in ms
-        'scores', score(cluscodes == b,score_mask),'mahal_distance',[]);
+        'scores', score(cluscodes == b,score_mask),'mahal_distance',[],'mean_wave',[]);
     gauss_fits{a} = gmdistribution.fit(clus{a}.scores,1); % multivariate fit to that cluster
     clus{a}.mahal_distance = mahal(gauss_fits{a},clus{a}.scores);    % calculate distances from data points to center of fit
+    clus{a}.mean_wave = mean(pc_values(cluscodes == b,:));
 end
 
 for a = 1:length(clusnames) % for each cluster, plot distance from center and scores through time
@@ -59,7 +60,7 @@ for a = 1:length(clusnames) % for each cluster, plot distance from center and sc
             gauss_fits_4plot{a}.mu(2)+4.*sqrt(gauss_fits_4plot{a}.Sigma(2,2))];
     
         ezcontour(@(x,y)pdf(gauss_fits_4plot{a},[x y]),x_limits,y_limits);
-        title(sprintf('X axis: Component %d score Y axis: Component %d score',comps(1),comps(2)));
+        title(sprintf('Cluster %d: X axis: Component %d score Y axis: Component %d score',clusnames(a),comps(1),comps(2)));
         cur_plot = cur_plot+1;
     end
     padded_time = clus{a}.times(1):clus{a}.times(end); % add entries for all intermediate times, for smoothing
@@ -74,19 +75,21 @@ for a = 1:length(clusnames) % for each cluster, plot distance from center and sc
     plot(padded_time, sdf, 'r-','LineWidth',5);
     cur_plot = cur_plot+1;
     
-    for c = 1:length(comps)
+    for c = 1:length(comps) % plot all scores through time as well
         subplot(count_plots,1,cur_plot);
-        these_scores = clus{a}.scores(:,c)-mean(clus{a}.scores(:,c));
+        these_scores = clus{a}.scores(:,c)-mean(clus{a}.scores(:,c)); % normalize scores to 0 mean for aesthetics
         h(cur_plot) = plot(clus{a}.times, these_scores, 'k.','MarkerSize',5);
         hold on;
         padded_score = zeros(length(padded_time),1);
         padded_score(ismember(padded_time,clus{a}.times))=these_scores;
         sdf=fullgauss_filtconv(padded_score, sigma, 0);
         sdf=sdf./max(sdf).*(max([these_scores;abs(these_scores)]).*0.4);
-        plot(padded_time, sdf, 'r-','LineWidth',5);
+        plot(padded_time, sdf, 'r-','LineWidth',3);
         title(sprintf('X axis: Time (ms) Y axis: Component %d score',comps(c)));
         cur_plot = cur_plot+1;
     end
+    figure();
+    plot(clus{a}.mean_wave);
 end
 
 end
