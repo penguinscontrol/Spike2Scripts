@@ -7,18 +7,18 @@
 %  sigma = 1;
 %  start_offset = 12;
 
-if strcmp(getenv('username'),'DangerZone')
-        directory = 'E:\data\Recordings\';
-    elseif strcmp(getenv('username'),'Radu')
-        directory = 'E:\Spike_Sorting\';
-    elseif strcmp(getenv('username'),'The Doctor')
-        directory = 'C:\Users\The Doctor\Data\';
-    elseif strcmp(getenv('username'),'JuanandKimi') || ...
-            strcmp(getenv('username'),'Purkinje')
-        directory = 'C:\Data\Recordings\';
-    else
-        directory = 'B:\data\Recordings\';
-end
+% if strcmp(getenv('username'),'DangerZone')
+%         directory = 'E:\data\Recordings\';
+%     elseif strcmp(getenv('username'),'Radu')
+%         directory = 'E:\Spike_Sorting\';
+%     elseif strcmp(getenv('username'),'The Doctor')
+%         directory = 'C:\Users\The Doctor\Data\';
+%     elseif strcmp(getenv('username'),'JuanandKimi') || ...
+%             strcmp(getenv('username'),'Purkinje')
+%         directory = 'C:\Data\Recordings\';
+%     else
+%         directory = 'B:\data\Recordings\';
+% end
 
 cd([directory, 'spike2temp\']);
 sigma = 1000.*sigma; % Convert sigma from seconds to milliseconds

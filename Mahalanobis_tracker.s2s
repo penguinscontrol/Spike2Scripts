@@ -51,6 +51,7 @@ ok% := MatLabPut("sigma",sigma);
 ok% := MatLabPut("pulse_clus",TMStimes%);
 ok% := MatLabPut("temp_size",tempsize%);
 ok% := MatLabPut("start_offset",start%);
+ok% := MatLabPut("directory",ssdir$);
 ok% := MatLabPut("tsamp",View(timevw%).Binsize(1));
 MatLabShow(1);
 MatLabEval("Mahalanobis_tracker;");
