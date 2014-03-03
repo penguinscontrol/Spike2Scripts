@@ -373,6 +373,7 @@ var t := -1;
 
 var ok% := MatLabEval("clear; clc;");
 ok% := MatLabPut("tsamp",Binsize(1));
+ok% := MatLabPut("directory",ssdir$);
 View(timevw%);
 
 var i%;
@@ -437,6 +438,7 @@ endif;
 
 ok% := MatlabPut("act_name",initial$);
 ok% := MatlabPut("f_name",thisname$);
+ok% := MatlabPut("ssdir",ssdir$);
 
 var codes%[codescnt%];
 var t := -1;
@@ -452,7 +454,7 @@ for i% := 0 to codescnt%-1 do
     t := NextTime(wvmrkch%,t);
     if ((t <> -1) and (codes%[i%] <> 0)) then
         sendfeats(codes%[i%]);
-        ok% := MatlabEval("cl_"+Str$(codes%[i%])+" = data_prep(noise_est,1,act_name,f_name,"+Str$(codes%[i%])+");");
+        ok% := MatlabEval("cl_"+Str$(codes%[i%])+" = data_prep(ssdir,noise_est,1,act_name,f_name,"+Str$(codes%[i%])+");");
         Message("Click to continue...");
     endif;
     
