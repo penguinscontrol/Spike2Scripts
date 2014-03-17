@@ -35,7 +35,7 @@ halt;
 func main()
 wvmrkch% := WvmrkChoose();    
     DlgCreate("Init");  'Start new dialog 
-    DlgChan(1,"Signal:",1);
+    DlgChan(1,"Signal:",513);
     DlgInteger(2,"Simple Spikes:",0,3000);
     DlgButton(0,"Cancel");
     DlgButton(1,"OK");
@@ -149,6 +149,7 @@ FileSaveAs(ssdir$+"spike2temp\\postss.mat",100,1,"",0,"UseSName=1|UseCName=0|Wav
 var temppath$ := FilePath$(0);
 FilePathSet(ssdir$+"spike2temp\\",0);
 
+ok% := MatLabPut("directory",ssdir$);
 ok% := MatLabPut("timelength",View(timevw%).MaxTime());
 ok% := MatLabPut("ssclus",ssclus%);
 ok% := MatLabPut("tsamp",View(timevw%).Binsize(1));

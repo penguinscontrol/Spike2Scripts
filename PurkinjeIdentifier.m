@@ -1,23 +1,24 @@
 
 
 % Variables from Spike2, uncomment for debugging
- clear;clc;close all;
- ssclus = 1;
- timelength = 1411.54678;
- tsamp = 2e-5;
+%  clear;clc;close all;
+%  ssclus = 1;
+%  timelength = 188.43948;
+%  directory = 'B:\Team Cerebellum\Resorted Files\';
+%  tsamp = 2e-5;
 
-if strcmp(getenv('username'),'DangerZone')
-        directory = 'E:\data\Recordings\';
-    elseif strcmp(getenv('username'),'Radu')
-        directory = 'E:\Spike_Sorting\';
-    elseif strcmp(getenv('username'),'The Doctor')
-        directory = 'C:\Users\The Doctor\Data\';
-    elseif strcmp(getenv('username'),'JuanandKimi') || ...
-            strcmp(getenv('username'),'Purkinje')
-        directory = 'C:\Data\Recordings\';
-    else
-        directory = 'B:\data\Recordings\';
-end
+% if strcmp(getenv('username'),'DangerZone')
+%         directory = 'E:\data\Recordings\';
+%     elseif strcmp(getenv('username'),'Radu')
+%         directory = 'E:\Spike_Sorting\';
+%     elseif strcmp(getenv('username'),'The Doctor')
+%         directory = 'C:\Users\The Doctor\Data\';
+%     elseif strcmp(getenv('username'),'JuanandKimi') || ...
+%             strcmp(getenv('username'),'Purkinje')
+%         directory = 'C:\Data\Recordings\';
+%     else
+%         directory = 'B:\data\Recordings\';
+% end
 
 cd([directory, 'spike2temp\']);
 
@@ -141,34 +142,36 @@ switch whatttodo
         
         % Calculate the energy of the signal => 1 feature
          energies = sum(data.^2)./tsamp; energies = energies';
-%         energies = energies./max(energies);
-%         [muhat,sigmahat] = normfit(energies');
-%         energy_cutoff = muhat+sigmahat;
+        energies = energies./max(energies);
+        [muhat,sigmahat] = normfit(energies');
+        energy_cutoff = 0.08;
         % Calculate the percent of the energy in low frequencies as opposed
         % to high. Problem: define low frequency. 1 feature
         
         % Calculate time to next spike. 1 feature.
          pauses = diff(datastr.times); pauses = [pauses; 0];
-%         pauses = pauses./max(pauses);
-%         [muhat,sigmahat] = normfit(pauses');
-%         pauses_cutoff = muhat+0.1*sigmahat;
-%         
-%         hold on;
-%         scatter(pauses,energies,'bo');
-%         mynewlabels(pauses >= pauses_cutoff & energies >= energy_cutoff) = ssclus+30;
-%         scatter(pauses(pauses >= pauses_cutoff & energies >= energy_cutoff),energies(pauses >= pauses_cutoff & energies >= energy_cutoff),'r+');
-        
-        M = [pauses, energies]';
-        W = SimGraph_NearestNeighbors(M, 5,2,1);
-        %W = SimGraph_Epsilon(M, 0.1);
-        C = SpectralClustering(W,2,1);
-        C = full(C);
-        C = C(:,1)+C(:,2).*2;
-        mynewlabels = C;
+        pauses = pauses./max(pauses);
+        [muhat,sigmahat] = normfit(pauses');
+        pauses_cutoff = 0.02;
         
         hold on;
         scatter(pauses,energies,'bo');
-        scatter(pauses(mynewlabels == 1),energies(mynewlabels == 1),'r+');
+        mask = pauses >= pauses_cutoff & energies >= energy_cutoff;
+        mynewlabels(mask) = ssclus+30;
+%        scatter(pauses(mask),energies(mask),'r+');
+        
+%        C = [];
+%         M = [pauses, energies]';
+%         W = SimGraph_NearestNeighbors(M, 5,2,1);
+%         W = SimGraph_Epsilon(M, 0.1);
+%         C = SpectralClustering(W,2,1);
+%         C = full(C);
+%         C = C(:,1)+C(:,2).*2;
+%        mynewlabels = C;
+        
+        hold on;
+        scatter(pauses,energies,'bo');
+        scatter(pauses(mynewlabels == 31),energies(mynewlabels == 31),'r+');
     otherwise %fft_max_sd
         
         data_fft_amp = abs(data_fft(1:(floor(rws/2)+1),:)); %get fft amplitudes for positive frequencies
