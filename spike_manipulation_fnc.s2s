@@ -109,12 +109,13 @@ if ChanKind(ch%) = 6 then 'if ch% is a wavemark
         
     case opt% = 2 then 'number of clusters
         var i%;
+        out := 0;
         View(ViewLink());
-        for i%:=0 to 255 do
+        for i%:=1 to 255 do
             MarkMask(ch%,0,0,-1);
             MarkMask(ch%,0,1,i%);
             if (NextTime(ch%,-1) <> (-1)) then
-                out := i%;
+                out := out+1;
             endif;
         next;
         MarkMask(ch%,0,1,-1);

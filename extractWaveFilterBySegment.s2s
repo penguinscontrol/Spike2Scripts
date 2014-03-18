@@ -31,7 +31,7 @@ var high% := 9000;
     DlgButton(1,"OK");
     var ok% := DlgShow(sigchan%,low%,high%);    'ok% is 0 if user cancels,  variables updated if not
 
-var seglength% := 1200; 'Examine seglength% seconds of signal at a time
+var seglength% := 600; 'Examine seglength% seconds of signal at a time
 var seg% := Ceil(View(timevw%).MaxTime()/seglength%); ' How many seglength% second long pieces?
 
 filtered% := MemChan(1,0,View(timevw%).Binsize(sigchan%));
