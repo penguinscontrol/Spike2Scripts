@@ -1,4 +1,4 @@
-function [subj, coord, depth] = extract_info(in)
+function [subj, coord, depth] = name2coords(in)
 %extract_info
 %Gets information about the coordinates of a recording from the filename
 subj = in(1);
@@ -7,8 +7,8 @@ subj = in(1);
 %end
 
 coord = struct('lm',0,'ap',0);
-[si,ei] = regexp(in,'_\w*_'); % retrieve part of string between underscores
-depth = str2double(in(si+1:ei-1));
+[si,ei] = regexp(in,'\w*_');
+depth = str2double(in(ei+2:end));
 
 if ismember('L',in)&& ismember('A',in)
     [si,ei] = regexp(in,'L\w*A');

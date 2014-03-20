@@ -892,3 +892,62 @@ end;
 func quit%()
 return 0
 end
+
+func todb%()
+'Sends current sort to database
+var ok%;
+var thisname$ := FileName$(3)+FileName$(4);
+var subj$ := Left$(thisname$,1);
+
+    var subjects$[3],subchoice%;
+    subjects$[0] := "Rigel";
+    subjects$[1] := "Sixx";
+    subjects$[2] := "Hilda";
+
+docase
+case subj$ = "R" then
+    subj$ := subjects$[0];
+case subj$ = "S" then
+    subj$ := subjects$[1];
+case subj$ = "H" then
+    subj$ := subjects$[2];
+else 
+    DlgCreate("Export for REXDataGUI");
+    DlgList(1,"Which subject is this?",subjects$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    ok% := DlgShow(subchoice%);
+    if ok% = 0 then halt; endif;
+    subj$ := subjects$[subchoice%];   
+endcase;
+
+var chamber$;
+DlgCreate("Commit sort to Database");
+DlgString(1,"Please indicate chamber:",128, "", 0, 0, "Cerebellum|Thalamus");
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(chamber$);
+
+MatlabOpen(1);
+MatlabEval("clear;clc;");
+MatlabEval("conn = connect2DB();");
+MatlabEval("newrecord = struct('name',[],'path',[],'date',[], 'chamber', []);");
+
+ok% := MatlabPut("ssdir",ssdir$);
+MatlabEval("newrecord.path = ssdir;");
+
+ok% := MatlabPut("thisname",thisname$);
+MatlabEval("newrecord.name = thisname;");
+
+var today$ := Date$(2,2,3,3,"-"); 
+ok% := MatlabPut("today",today$);
+MatlabEval("newrecord.date = today;");
+
+ok% := MatlabPut("chamber", chamber$);
+MatlabEval("newrecord.chamber = chamber");
+'MatlabShow(1);
+MatlabEval("conn = connect2DB");
+MatlabEval("[already, success] = addRecord(newrecord, conn);");
+MatLabClose();
+return 1
+end
