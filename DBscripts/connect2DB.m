@@ -3,5 +3,6 @@ function [ conn ] = connect2DB(  )
 conn = database('recordings_alpha','webroot','monkey',...
                 'Vendor','MySQL',...
                 'Server','152.3.216.217');
+set(conn, 'AutoCommit', 'off')
 end
 

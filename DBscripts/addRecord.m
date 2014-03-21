@@ -3,7 +3,7 @@ function [already_exists, success] = addRecord( newrecord, conn )
 %exists.
 
 % Check for existing record
-query = ['SELECT recording_id FROM recordings WHERE a_file = ''' newrecord.name 'A'''];           
+query = ['SELECT recording_id, location FROM recordings r INNER JOIN grid g ON r.grid_fid = g.id WHERE a_file = ''' newrecord.name 'A'''];           
 results = fetch(conn,query);
 already_exists = ~isempty(results);
 success = true;
@@ -13,11 +13,23 @@ if ~already_exists
         [subj, coord, depth] = name2coords(newrecord.name);
         grid = whichGrid(subj, newrecord.chamber, conn);
         this_data = {[],coord.lm,coord.ap,depth,newrecord.path, [newrecord.name 'A'], [newrecord.name 'E'], [newrecord.name '.smr'], newrecord.date,grid{1}};
-        this_data
         datainsert(conn,'recordings',col_names, this_data);
+        commit(conn);
     catch
         success = false;
     end
+end
+
+% If this record has an unspecified grid and there is one available, update
+% it
+if already_exists
+if strcmp(results{2},'UNKNOWN') && ~strcmp(newrecord.chamber,'UNKNOWN')
+    [subj, ~, ~] = name2coords(newrecord.name);
+    grid = {whichGrid(subj, newrecord.chamber, conn)};
+    col_names = {'grid_fid'};
+    update(conn,'recordings',col_names,grid{1},['WHERE recording_id = ' num2str(results{1}) ';']);
+    commit(conn);
+end
 end
 
 end
