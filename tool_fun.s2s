@@ -933,34 +933,21 @@ ok% := DlgShow(chamber$,user$);
 MatlabOpen(1);
 MatlabEval("clear;clc;");
 MatlabEval("conn = connect2DB();");
-MatlabEval("newrecord = struct('name',[],'path',[],'date',[], 'chamber', [], 'user', []);");
 
-ok% := MatlabPut("ssdir",ssdir$);
-MatlabEval("newrecord.path = ssdir;");
+var today$ := Date$(2,2,3,3,"-");  'Numbers specify formatting which mysql will understand
+MatlabEval("newrecord = struct('name','"+thisname$+"','path','"+ssdir$+"','date','"+today$+"', 'chamber', '"+chamber$+"', 'user', '"+user$+"');"); ' package data to make a new recording
 
-ok% := MatlabPut("user",user$);
-MatlabEval("newrecord.user = user;");
-
-ok% := MatlabPut("thisname",thisname$);
-MatlabEval("newrecord.name = thisname;");
-
-var today$ := Date$(2,2,3,3,"-"); 
-ok% := MatlabPut("today",today$);
-MatlabEval("newrecord.date = today;");
-
-ok% := MatlabPut("chamber", chamber$);
-MatlabEval("newrecord.chamber = chamber");
 MatlabShow(1);
-MatlabEval("conn = connect2DB");
-MatlabEval("[already, success] = addRecord(newrecord, conn);");
+MatlabEval("conn = connect2DB"); ' Establish database connection
+MatlabEval("[already, success, rec_id] = addRecord(newrecord, conn);");   'add the record if it isn't there. Update chamber if set to UNKNOWN
 
-MatlabEval("[already_sorted, who_by, ids, howmany_sorts, fname] = checkSort(newrecord, conn);");
+MatlabEval("[already_sorted, who_by, ids, howmany_sorts, fname] = checkSort(newrecord, conn);"); ' Check if there is a sort
 var alreadySorted%, howmanysorts%;
 ok% := MatlabGet("already_sorted", alreadySorted%);
 
 var newsort% := 0;
 var sel$;
-if alreadySorted% = 1 then
+if alreadySorted% = 1 then                                  'Inquire whether or not you want to overwrite an existing sort or create a new one
     ok% := MatlabGet("howmany_sorts", howmanysorts%);
     var ids%[howmanysorts%], indx%;
     ok% := MatlabGet("ids", ids%[]);
@@ -975,11 +962,26 @@ if alreadySorted% = 1 then
     newsort% := DlgShow(indx%);    'ok% is 0 if user cancels,  variables updated if not 
 endif
 
+var thesecomments$ := FileComment$(1)+FileComment$(2)+FileComment$(3)+FileComment$(4)+FileComment$(5);
+    var recid%;
+    MatlabGet("rec_id", recid%);  ' the sort's parent id
+    MatlabEval("newsort = struct('name', '"+thisname$+"', 'comments', '"+thesecomments$+"', 'user', '"+user$+"', 'origin', 'Spike2', 'path', '"+ssdir$+"', 'parent', "+Str$(recid%)+");");
+
 if newsort% = 0 then
-    MatlabEval("success = addSort(newsort, conn);");;
+    MatlabEval("[success, sort_id] = addSort(newsort, conn);");
 else
-    MatlabEval("success = updateSort("+Str$(ids%[indx%])+", newsort, conn)");
+    MatlabEval("[success, sort_id] = updateSort("+Str$(ids%[indx%])+", newsort, conn)");
 endif
+
+' Get codes for all clusters
+var numcodes% := getWavemarkInfo(wvmrkch%, 2);
+var codelist%[numcodes%];
+GetCodes(wvmrkch%,codelist%);
+
+var i%;
+for i% := 0 to numcodes%-1 do
+    MatlabEval("[success, c_id] = addCluster(sort_id, "+Str$(codelist%[i%])+", conn);");
+next;
 
 MatLabClose();
 return 1

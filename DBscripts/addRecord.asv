@@ -26,7 +26,7 @@ end
 % If this record has an unspecified grid and there is one available, update
 % it
 if already_exists
-    rec_id = cast(results{1}, 'int8');
+    rec_id = cast(results{1}, '';
     if strcmp(results{2},'UNKNOWN') && ~strcmp(newrecord.chamber,'UNKNOWN')
         [subj, ~, ~] = name2coords(newrecord.name);
         grid = {whichGrid(subj, newrecord.chamber, conn)};
