@@ -1,7 +1,6 @@
-function [ success ] = updateSort(s_id, newsort, conn)
+function [ success, sort_id ] = updateSort(s_id, newsort, conn)
 %updateSort Summary of this function goes here
 %   Detailed explanation goes here
-success = 0;
 try
     
     [col_names, this_data] = dataFromSort(newsort);
