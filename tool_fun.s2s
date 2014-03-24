@@ -208,7 +208,7 @@ for a% := 0 to codescnt%-1 do
         ChanColourSet(1,2,r,g,b);
         newname$ := "Cluster "+Str$(codes%[a%]);
         WindowTitle$(newname$);
-        FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(codes%[a%])+".jpeg",14);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_cl_"+Str$(codes%[a%])+"_INTH.jpeg",14);
     endif;
     
 ;
@@ -346,7 +346,7 @@ for a% := 0 to codescnt%-1 do
         DrawMode(1,13,0,3); 'Set cubic spline
         ChanPenWidth(1,3);
         Optimise(-1);
-        FileSaveAs(ssdir$+"figures\\"+thisname$+"_Wvfrm_cl_"+Str$(codes%[a%])+".jpeg",14);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_cl_"+Str$(codes%[a%])+"_Wvfrm.jpeg",14);
     endif;
     
 ;
@@ -935,7 +935,7 @@ MatlabEval("clear;clc;");
 MatlabEval("conn = connect2DB();");
 
 var today$ := Date$(2,2,3,3,"-");  'Numbers specify formatting which mysql will understand
-MatlabEval("newrecord = struct('name','"+thisname$+"','path','"+ssdir$+"','date','"+today$+"', 'chamber', '"+chamber$+"', 'user', '"+user$+"');"); ' package data to make a new recording
+MatlabEval("newrecord = struct('name','"+thisname$+"','date','"+today$+"', 'chamber', '"+chamber$+"', 'user', '"+user$+"');"); ' package data to make a new recording
 
 MatlabShow(1);
 MatlabEval("conn = connect2DB"); ' Establish database connection
@@ -965,12 +965,15 @@ endif
 var thesecomments$ := FileComment$(1)+FileComment$(2)+FileComment$(3)+FileComment$(4)+FileComment$(5);
     var recid%;
     MatlabGet("rec_id", recid%);  ' the sort's parent id
-    MatlabEval("newsort = struct('name', '"+thisname$+"', 'comments', '"+thesecomments$+"', 'user', '"+user$+"', 'origin', 'Spike2', 'path', '"+ssdir$+"', 'parent', "+Str$(recid%)+");");
+    MatlabEval("newsort = struct('name', '"+thisname$+"', 'comments', '"+thesecomments$+"', 'user', '"+user$+"', 'origin', 'Spike2', 'parent', "+Str$(recid%)+");");
+
+MatlabEval("ftp_conn = ftp('152.3.216.217', 'Radu', 'monkey');");
 
 if newsort% = 0 then
     MatlabEval("[success, sort_id] = addSort(newsort, conn);");
 else
     MatlabEval("[success, sort_id] = updateSort("+Str$(ids%[indx%])+", newsort, conn)");
+    MatlabEval("[success] = deleteChildren(sort_id, conn, ftp_conn)");
 endif
 
 ' Get codes for all clusters
@@ -980,9 +983,10 @@ var codelist%[numcodes%];
 GetCodes(wvmrkch%,codelist%);
 
 var i%, command$;
-MatlabEval("ftp_conn = ftp('152.3.216.217', 'Radu', 'monkey');");
 for i% := 0 to numcodes%-1 do
     command$ := "[success, c_id] = addCluster(sort_id, "+Str$(codelist%[i%])+", conn, ftp_conn);";
+    ok% := MatlabEval(command$);
+    command$ := "[success, psth_id] = addPsth(c_id, conn, ftp_conn)";
     ok% := MatlabEval(command$);
 next;
 

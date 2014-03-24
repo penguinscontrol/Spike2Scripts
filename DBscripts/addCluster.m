@@ -4,13 +4,15 @@ function [ success, c_id ] = addCluster(s_id, c_name, conn, ftp_con)
 
 try
     % Get parent sort name
-    query = ['SELECT a_file, path FROM sorts s INNER JOIN recordings r on s.recording_fid = r.recording_id WHERE sort_id = ' num2str(s_id) ];           
+    query = ['SELECT a_file FROM sorts s INNER JOIN recordings r on s.recording_fid = r.recording_id WHERE sort_id = ' num2str(s_id) ];
+    ssdirq = ['SELECT path FROM machines WHERE m_name = ' getenv('username')];
+    ssdir = fetch(conn,ssdirq); ssdir = ssdir{1};
     name_results = fetch(conn,query);
     % format to wfrm and jpeg name
-    wvfrm_name = [name_results{1}(1:end-1) '_Wvfrm_cl_' num2str(c_name) '.jpeg'];
-    isi_name = [name_results{1}(1:end-1) '_INTH_cl_' num2str(c_name) '.jpeg'];
-    path = [name_results{2} 'figures\'];
-    putatives_path = [name_results{2}];
+    wvfrm_name = [name_results{1}(1:end-1) '_cl_' num2str(c_name) '_Wvfrm.jpeg'];
+    isi_name = [name_results{1}(1:end-1) '_cl_' num2str(c_name) '_INTH.jpeg'];
+    path = [ssdir 'figures\'];
+   
     
     col_names = {'average_wvfrm', 'isi', 'phenotype', 'name', 'sort_fid'};
     first_data = {' ', ' ', ' ', c_name, s_id}; % add as much as we can, don't know c_id yet
@@ -24,25 +26,31 @@ try
     wvfrm_ftp_name = '';
     isi_ftp_name = '';
     cd(ftp_con, '/myapp/figures');
+    
+    % Upload waveform jpeg
     try
-        wvfrm_ftp_name = [name_results{1}(1:end-1) '_Wvfrm_cl_' num2str(c_id) '.jpeg'];
+        wvfrm_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id)  '_Wvfrm.jpeg'];
         copyfile([path wvfrm_name], [path wvfrm_ftp_name]);
         mput(ftp_con, [path wvfrm_ftp_name]);
         delete([path wvfrm_ftp_name]);
     catch    
     end
+    
+    % Upload waveform jpeg
     try
-        isi_ftp_name = [name_results{1}(1:end-1) '_INTH_cl_' num2str(c_id) '.jpeg'];
+        isi_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id) '_INTH.jpeg'];
         copyfile([path isi_name], [path isi_ftp_name]);
         mput(ftp_con, [path isi_ftp_name]);
         delete([path isi_ftp_name]);    
     catch
     end
     
+    % look for a putatives txt file
     putatives = ' ';
         subj = whichSubj(name_results{1}(1));
-        fhandle = fopen([putatives_path subj '\Spike2Exports\' name_results{1}(1:end-1) 'n.txt']);
+        fhandle = fopen([ssdir subj '\Spike2Exports\' name_results{1}(1:end-1) 'n.txt']);
     
+    % if found one, upload putative names
     if fhandle ~= -1
         thisline = fgetl(fhandle);
         foundit = false;
@@ -56,7 +64,8 @@ try
         end
         fclose(fhandle);
     end
-        
+    
+    % update record
     col_names = {'average_wvfrm', 'isi', 'phenotype'};
     second_data = {wvfrm_ftp_name, isi_ftp_name, putatives};
     

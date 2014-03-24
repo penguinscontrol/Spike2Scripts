@@ -9,10 +9,10 @@ already_exists = ~isempty(results);
 success = true;
 if ~already_exists
     try
-        col_names = {'recording_id','lm_coord','ap_coord','depth','path','a_file','e_file','sp2_file','date','grid_fid'};
+        col_names = {'recording_id','lm_coord','ap_coord','depth','a_file','e_file','sp2_file','date','grid_fid'};
         [subj, coord, depth] = name2coords(newrecord.name);
         grid = whichGrid(subj, newrecord.chamber, conn);
-        this_data = {[],coord.lm,coord.ap,depth,newrecord.path, [newrecord.name 'A'], [newrecord.name 'E'], [newrecord.name '.smr'], newrecord.date,grid{1}};
+        this_data = {[],coord.lm,coord.ap,depth, [newrecord.name 'A'], [newrecord.name 'E'], [newrecord.name '.smr'], newrecord.date,grid{1}};
         datainsert(conn,'recordings',col_names, this_data);
         commit(conn);
         query = ['SELECT recording_id FROM recordings WHERE a_file = ''' newrecord.name 'A'''];           
