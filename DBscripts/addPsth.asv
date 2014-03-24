@@ -1,0 +1,24 @@
+function [ success, psth_id ] = addPsth( c_id, conn, ftp_conn )
+%addPsth Scan local figures folder and add any psth's that correspond to
+%the cluster indicated by c_id to the database
+
+try
+    ssdirq = ['SELECT path FROM machines WHERE m_name = ''' getenv('username') ''''];
+    ssdir = fetch(conn,ssdirq); ssdir = ssdir{1};
+    figdir = [ssdir 'figures\'];
+    sacdir = [figdir 'sac\'];
+    visdir = [figdir 'vis\'];
+    rewdir = [figdir 'rew\'];
+    quer = ['SELECT s.processed_mat, c.name FROM clusters c' ...
+        ' INNER JOIN sorts s ON c.sort_fid = s.sort_id WHERE '...
+        'c.cluster_id = ' num2str(c_id)];
+    results = fetch(conn, quer);
+    names 
+    success = 1;
+catch
+    success = 0;
+end
+
+
+end
+

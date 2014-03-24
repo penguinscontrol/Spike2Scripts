@@ -968,12 +968,13 @@ var thesecomments$ := FileComment$(1)+FileComment$(2)+FileComment$(3)+FileCommen
     MatlabEval("newsort = struct('name', '"+thisname$+"', 'comments', '"+thesecomments$+"', 'user', '"+user$+"', 'origin', 'Spike2', 'parent', "+Str$(recid%)+");");
 
 MatlabEval("ftp_conn = ftp('152.3.216.217', 'Radu', 'monkey');");
-
 if newsort% = 0 then
-    MatlabEval("[success, sort_id] = addSort(newsort, conn);");
+    ok% := MatlabEval("[success, sort_id] = addSort(newsort, conn);");
 else
-    MatlabEval("[success, sort_id] = updateSort("+Str$(ids%[indx%])+", newsort, conn)");
-    MatlabEval("[success] = deleteChildren(sort_id, conn, ftp_conn)");
+    ok% := MatlabEval("[success, sort_id] = updateSort("+Str$(ids%[indx%])+", newsort, conn)");
+    
+    ok% := MatlabEval("[success] = deleteChildren(sort_id, conn, ftp_conn)");
+    
 endif
 
 ' Get codes for all clusters

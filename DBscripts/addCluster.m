@@ -5,8 +5,7 @@ function [ success, c_id ] = addCluster(s_id, c_name, conn, ftp_con)
 try
     % Get parent sort name
     query = ['SELECT a_file FROM sorts s INNER JOIN recordings r on s.recording_fid = r.recording_id WHERE sort_id = ' num2str(s_id) ];
-    ssdirq = ['SELECT path FROM machines WHERE m_name = ' getenv('username')];
-    ssdir = fetch(conn,ssdirq); ssdir = ssdir{1};
+    ssdir = getSsdir(conn);
     name_results = fetch(conn,query);
     % format to wfrm and jpeg name
     wvfrm_name = [name_results{1}(1:end-1) '_cl_' num2str(c_name) '_Wvfrm.jpeg'];
@@ -33,6 +32,11 @@ try
         copyfile([path wvfrm_name], [path wvfrm_ftp_name]);
         mput(ftp_con, [path wvfrm_ftp_name]);
         delete([path wvfrm_ftp_name]);
+        % update record
+        col_names = {'average_wvfrm'};
+        second_data = {wvfrm_ftp_name};
+        update(conn,'clusters',col_names,second_data,['WHERE cluster_id = ' num2str(c_id) ';']);
+        commit(conn);
     catch    
     end
     
@@ -41,7 +45,12 @@ try
         isi_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id) '_INTH.jpeg'];
         copyfile([path isi_name], [path isi_ftp_name]);
         mput(ftp_con, [path isi_ftp_name]);
-        delete([path isi_ftp_name]);    
+        delete([path isi_ftp_name]);
+        % update record
+        col_names = {'isi'};
+        second_data = {isi_ftp_name};
+        update(conn,'clusters',col_names,second_data,['WHERE cluster_id = ' num2str(c_id) ';']);
+        commit(conn);    
     catch
     end
     
@@ -59,18 +68,16 @@ try
             if cur_c == c_name
                 foundit = true;
                 putatives = cellstr(thisline);
+                % update record
+        col_names = {'phenotype'};
+        second_data = {putatives};
+        update(conn,'clusters',col_names,second_data,['WHERE cluster_id = ' num2str(c_id) ';']);
+        commit(conn);
             end
             thisline = fgetl(fhandle);
         end
         fclose(fhandle);
     end
-    
-    % update record
-    col_names = {'average_wvfrm', 'isi', 'phenotype'};
-    second_data = {wvfrm_ftp_name, isi_ftp_name, putatives};
-    
-    update(conn,'clusters',col_names,second_data,['WHERE cluster_id = ' num2str(c_id) ';']);
-    commit(conn);
     success = 1;
 catch
         success = 0;
