@@ -31,5 +31,5 @@ end
 
 sqlquery = ['DELETE FROM clusters WHERE sort_fid = ' num2str(sort_id)];
 curs = exec(conn, sqlquery);
-
+success = 1;
 end

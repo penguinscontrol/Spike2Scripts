@@ -42,7 +42,7 @@ for i% := 0 to num%-1 do
 next;
 
 View(textvw%);
-FileSaveAs("comments_"+Date$(2,2,1,0,"_")+".txt",1,0);
+FileSaveAs("comments.txt",1,0);
 FileClose();
 end
 

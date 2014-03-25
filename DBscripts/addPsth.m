@@ -3,6 +3,7 @@ function [ success, psth_id ] = addPsth( c_id, conn, ftp_conn )
 %the cluster indicated by c_id to the database
 
 try
+    psth_id = [];
     ssdir = getSsdir(conn);
     figdir = [ssdir 'figures\'];
     sacdir = [figdir 'sac\'];
@@ -17,7 +18,7 @@ try
     clusters = results{:,2};
     origins = results{:,3};
     origins = regexprep(origins,'Spike2','_Sp2');
-    origins = regexprep(origins,'REX','_REX');
+    origins = regexprep(origins,'Rex','_REX');
     
     %names = cellfun(@(x) regexpi(x,'\\\w*\.','match'), results(:,1), 'UniformOutput', false);
     %names = cellfun(@(x) x{:}(2:end-1), names,'UniformOutput',false);
@@ -35,12 +36,14 @@ try
         end
         
         for c = 1:length(listPsth) % add the psth's
-            psth2DB(conn,ftp_conn, c_id, listPsth(c,:));
+            [t_psth_id, success] = psth2DB(conn,ftp_conn, c_id, listPsth(c,:));
+            psth_id = [psth_id t_psth_id];
         end
     end
     
     success = 1;
 catch
+    psth_id = [];
     success = 0;
 end
 

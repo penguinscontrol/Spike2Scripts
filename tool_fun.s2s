@@ -933,12 +933,12 @@ ok% := DlgShow(chamber$,user$);
 MatlabOpen(1);
 MatlabEval("clear;clc;");
 MatlabEval("conn = connect2DB();");
+MatlabEval("ftp_conn = ftp('152.3.216.217', 'Radu', 'monkey');");
 
-var today$ := Date$(2,2,3,3,"-");  'Numbers specify formatting which mysql will understand
+var today$ := Date$(2,2,3,3,"-");  'Numbers specify formatting which mysql will understand: yyyy-mm-dd HH:MM:SS.FFF
 MatlabEval("newrecord = struct('name','"+thisname$+"','date','"+today$+"', 'chamber', '"+chamber$+"', 'user', '"+user$+"');"); ' package data to make a new recording
 
 MatlabShow(1);
-MatlabEval("conn = connect2DB"); ' Establish database connection
 MatlabEval("[already, success, rec_id] = addRecord(newrecord, conn);");   'add the record if it isn't there. Update chamber if set to UNKNOWN
 
 MatlabEval("[already_sorted, who_by, ids, howmany_sorts, fname] = checkSort(newrecord, conn);"); ' Check if there is a sort
@@ -967,7 +967,6 @@ var thesecomments$ := FileComment$(1)+FileComment$(2)+FileComment$(3)+FileCommen
     MatlabGet("rec_id", recid%);  ' the sort's parent id
     MatlabEval("newsort = struct('name', '"+thisname$+"', 'comments', '"+thesecomments$+"', 'user', '"+user$+"', 'origin', 'Spike2', 'parent', "+Str$(recid%)+");");
 
-MatlabEval("ftp_conn = ftp('152.3.216.217', 'Radu', 'monkey');");
 if newsort% = 0 then
     ok% := MatlabEval("[success, sort_id] = addSort(newsort, conn);");
 else
