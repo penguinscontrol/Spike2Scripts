@@ -48,47 +48,48 @@ if isprop(units(1,1),feat1)
     
     if ~isempty(unc)
         [his{1},hisbins{1}] = hist(unc,1000);
-        ha(1) = stem(hisbins{1}(his{1}~= 0),his{1}(his{1}~= 0),'ko','DisplayName','Unclassified');
+        ha(1) = stem(hisbins{1}(his{1}~= 0),his{1}(his{1}~= 0),'ko','DisplayName','Unclassified','MarkerFaceColor','k');
     end
     if ~isempty(gol)
         [his{2},hisbins{2}] = hist(gol,1000);
-        ha(2) = stem(hisbins{2}(his{2}~= 0),his{2}(his{2}~= 0),'rs','DisplayName','Golgi');
+        ha(2) = stem(hisbins{2}(his{2}~= 0),his{2}(his{2}~= 0),'rs','DisplayName','Golgi','MarkerFaceColor','k');
     end
     if ~isempty(den)
         [his{3},hisbins{3}] = hist(den,1000);
-        ha(3) = stem(hisbins{3}(his{3}~= 0),his{3}(his{3}~= 0),'b*','DisplayName','Dentate');
+        ha(3) = stem(hisbins{3}(his{3}~= 0),his{3}(his{3}~= 0),'b*','DisplayName','Dentate','MarkerFaceColor','k');
     end
     if ~isempty(pur)
         [his{4},hisbins{4}] = hist(pur,1000);
-        ha(4) = stem(hisbins{4}(his{4}~= 0),his{4}(his{4}~= 0),'gd','DisplayName','Purkinje');
+        ha(4) = stem(hisbins{4}(his{4}~= 0),his{4}(his{4}~= 0),'gd','DisplayName','Purkinje','MarkerFaceColor','k');
     end
     if ~isempty(fib)
         [his{5},hisbins{5}] = hist(fib,1000);
-        ha(5) = stem(hisbins{5}(his{5}~= 0),his{5}(his{5}~= 0),'m+','DisplayName','Fiber');
+        ha(5) = stem(hisbins{5}(his{5}~= 0),his{5}(his{5}~= 0),'m+','DisplayName','Fiber','MarkerFaceColor','k');
     end
     if ~isempty(ub)
         [his{6},hisbins{6}] = hist(ub,1000);
-        ha(6) = stem(hisbins{6}(his{6}~= 0),his{6}(his{6}~= 0),'m+','DisplayName','Unipolar Brush');
+        ha(6) = stem(hisbins{6}(his{6}~= 0),his{6}(his{6}~= 0),'m+','DisplayName','Unipolar Brush','MarkerFaceColor','k');
     end
     if ~isempty(bas)
         [his{7},hisbins{7}] = hist(bas,1000);
-        ha(7) = stem(hisbins{7}(his{7}~= 0),his{7}(his{7}~= 0),'m+','DisplayName','Basket');
+        ha(7) = stem(hisbins{7}(his{7}~= 0),his{7}(his{7}~= 0),'m+','DisplayName','Basket','MarkerFaceColor','k');
     end
     if ~isempty(ste)
         [his{8},hisbins{8}] = hist(ste,1000);
-        ha(8) = stem(hisbins{8}(his{8}~= 0),his{8}(his{8}~= 0),'m+','DisplayName','Stellate');
+        ha(8) = stem(hisbins{8}(his{8}~= 0),his{8}(his{8}~= 0),'m+','DisplayName','Stellate','MarkerFaceColor','k');
     end
     if ~isempty(gra)
         [his{9},hisbins{9}] = hist(gra,1000);
-        ha(9) = stem(hisbins{9}(his{9}~= 0),his{9}(his{9}~= 0),'m+','DisplayName','Granule');
+        ha(9) = stem(hisbins{9}(his{9}~= 0),his{9}(his{9}~= 0),'m+','DisplayName','Granule','MarkerFaceColor','k');
     end
     if ~isempty(bor)
         [his{10},hisbins{10}] = hist(bor,1000);
-        ha(10) = stem(hisbins{10}(his{10}~= 0),his{10}(his{10}~= 0),'m+','DisplayName','Border');
+        ha(10) = stem(hisbins{10}(his{10}~= 0),his{10}(his{10}~= 0),'m+','DisplayName','Border','MarkerFaceColor','k');
     end
      
     
-    xlabel(feat1);
+    t = xlabel(feat1);
+set(t,'Interpreter','none');
     legend(ha(ha ~= 0),0);
     
     print('-djpeg',[feat1, '_hist']);
@@ -108,69 +109,71 @@ if isprop(units(1,1),feat1)&&isprop(units(1,1),feat2)
         switch units(a).label
             case 'unclassified'
                 if ha(1) == 0
-                    ha(1) = plot(units(a).(feat1),units(a).(feat2),'ko','DisplayName','Unclassified');
+                    ha(1) = plot(units(a).(feat1),units(a).(feat2),'ko','DisplayName','Unclassified','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'ko');
+                    plot(units(a).(feat1),units(a).(feat2),'ko','MarkerFaceColor','k');
                 end
             case 'golgi'
                 if ha(2) == 0
-                    ha(2) = plot(units(a).(feat1),units(a).(feat2),'rs','DisplayName','Golgi');
+                    ha(2) = plot(units(a).(feat1),units(a).(feat2),'rs','DisplayName','Golgi','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'rs');
+                    plot(units(a).(feat1),units(a).(feat2),'rs','MarkerFaceColor','k');
                 end               
             case 'dentate'
                 if ha(3) == 0
-                    ha(3) = plot(units(a).(feat1),units(a).(feat2),'b*','DisplayName','Dentate');
+                    ha(3) = plot(units(a).(feat1),units(a).(feat2),'b*','DisplayName','Dentate','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'b*');
+                    plot(units(a).(feat1),units(a).(feat2),'b*','MarkerFaceColor','k');
                 end           
             case 'purkinje'
                 if ha(4) == 0
-                    ha(4) = plot(units(a).(feat1),units(a).(feat2),'gd','DisplayName','Purkinje');
+                    ha(4) = plot(units(a).(feat1),units(a).(feat2),'gd','DisplayName','Purkinje','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'gd');
+                    plot(units(a).(feat1),units(a).(feat2),'gd','MarkerFaceColor','k');
                 end              
             case 'fiber'
                 if ha(5) == 0
-                    ha(5) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Fiber');
+                    ha(5) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Fiber','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'m+');
+                    plot(units(a).(feat1),units(a).(feat2),'m+','MarkerFaceColor','k');
                 end              
             case 'ub'
                 if ha(6) == 0
-                    ha(6) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Unipolar Brush');
+                    ha(6) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Unipolar Brush','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'m+');
+                    plot(units(a).(feat1),units(a).(feat2),'m+','MarkerFaceColor','k');
                 end              
             case 'basket'
                 if ha(7) == 0
-                    ha(7) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Basket');
+                    ha(7) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Basket','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'m+');
+                    plot(units(a).(feat1),units(a).(feat2),'m+','MarkerFaceColor','k');
                 end              
             case 'stellate'
                 if ha(8) == 0
-                    ha(8) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Stellate');
+                    ha(8) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Stellate','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'m+');
+                    plot(units(a).(feat1),units(a).(feat2),'m+','MarkerFaceColor','k');
                 end              
             case 'granule'
                 if ha(9) == 0
-                    ha(9) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Granule');
+                    ha(9) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Granule','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'m+');
+                    plot(units(a).(feat1),units(a).(feat2),'m+','MarkerFaceColor','k');
                 end              
             case 'border'
                 if ha(10) == 0
-                    ha(10) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Border');
+                    ha(10) =  plot(units(a).(feat1),units(a).(feat2),'m+','DisplayName','Border','MarkerFaceColor','k');
                 else
-                    plot(units(a).(feat1),units(a).(feat2),'m+');
+                    plot(units(a).(feat1),units(a).(feat2),'m+','MarkerFaceColor','k');
                 end           
         end
         end
     end
-    xlabel(feat1);
-    ylabel(feat2);
+    t = xlabel(feat1);
+set(t,'Interpreter','none');
+    t = ylabel(feat2);
+set(t,'Interpreter','none');
     legend(ha(ha ~= 0),0);
     print('-djpeg',[feat1, '_vs_', feat2]);
 else
@@ -248,9 +251,12 @@ if isprop(units(1,1),feat1)&&isprop(units(1,1),feat2)&&isprop(units(1,1),feat3)
                 end            
         end        
     end
-    xlabel(feat1);
-    ylabel(feat2);
-    zlabel(feat3);
+    t = xlabel(feat1);
+set(t,'Interpreter','none');
+    t = ylabel(feat2);
+set(t,'Interpreter','none');
+    t = zlabel(feat3);
+set(t,'Interpreter','none');
     legend(ha(ha ~= 0),0);
     set(gca,'XGrid','on','YGrid','on');
     print('-djpeg',[feat1, '_vs_', feat2, '_vs_', feat3]);

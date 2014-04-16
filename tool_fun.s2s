@@ -13,13 +13,48 @@ end;
 
 Func PredictPCA%()   'Button 1 routine
 wvmrkch% := WvmrkChoose();
-wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
-samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
-var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
-var scores[wcnt%][samps%], variances[samps%],components[samps%][samps%];
-ArrConst(scores[][],data[][]);
-PCA(0,scores[][],variances[],components[][]);
-return 0;  'This stops the toolbar
+var ok%;
+
+samps% := MarkInfo(wvmrkch%,pre%);  'how many samples long is the wavemark channel?
+
+
+MatLabOpen(1); 'Open a connection to Matlab
+ok% := MatLabEval("clear; clc;");
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1); ' Show all
+ExportChanList(0, MaxTime(),wvmrkch%);
+FileSaveAs(ssdir$+"spike2temp\\predict.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+
+var temppath$ := FilePath$(0);
+FilePathSet(ssdir$+"spike2temp\\",0);
+' We need to acces the template boundaries
+var ssvw% := SSOpen(-1);
+if (ssvw% = 0) then  ' Is an SS window open?
+    ssvw% := SSOpen(1);        ' If not, open one
+endif;
+View(ssvw%); ' And make it the current view 
+SSChan(wvmrkch%);         ' Set the SS window to the channel of interest
+var tempsize%, start%, show%;
+tempsize% := SSTempSizeGet(start%, show%, pre%);
+FileClose();
+View(timevw%);
+var thisname$ := FileName$(3)+FileName$(4);
+
+ok% := MatLabPut("timelength",View(timevw%).MaxTime());
+ok% := MatLabPut("temp_size",tempsize%);
+ok% := MatLabPut("start_offset",start%);
+ok% := MatLabPut("directory",ssdir$);
+ok% := MatLabPut("fname",thisname$);
+ok% := MatLabPut("tsamp",View(timevw%).Binsize(1));
+MatLabShow(1);
+MatLabEval("PredictPCA;");
+var comps[3];
+ok% := MatLabGet("comps",comps[]);
+MatlabShow(1);
+Message("Highest 3 non-normal components: "+Str$(comps[0])+", "+Str$(comps[1])+", "+Str$(comps[2]));
+MatLabClose();
+return 1;  'This stops the toolbar
 end;
 
 func WvmrkChoose()
