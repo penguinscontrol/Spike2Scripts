@@ -1,24 +1,24 @@
 
 
 % Variables from Spike2, uncomment for debugging
- clear;clc;close all;
- ssclus = 1;
- timelength = 1377.2587563;
- directory = 'E:\Data\Recordings\Resorted Files\';
- tsamp = 2e-5;
+% clear;clc;close all;
+% ssclus = 1;
+% timelength = 1377.2587563;
+% directory = 'E:\Data\Recordings\Resorted Files\';
+% tsamp = 2e-5;
 
-% if strcmp(getenv('username'),'DangerZone')
-%         directory = 'E:\data\Recordings\';
-%     elseif strcmp(getenv('username'),'Radu')
-%         directory = 'E:\Spike_Sorting\';
-%     elseif strcmp(getenv('username'),'The Doctor')
-%         directory = 'C:\Users\The Doctor\Data\';
-%     elseif strcmp(getenv('username'),'JuanandKimi') || ...
-%             strcmp(getenv('username'),'Purkinje')
-%         directory = 'C:\Data\Recordings\';
-%     else
-%         directory = 'B:\data\Recordings\';
-% end
+if strcmp(getenv('username'),'DangerZone')
+        directory = 'E:\data\Recordings\';
+    elseif strcmp(getenv('username'),'Radu')
+        directory = 'E:\Spike_Sorting\';
+    elseif strcmp(getenv('username'),'The Doctor')
+        directory = 'C:\Users\The Doctor\Data\';
+    elseif strcmp(getenv('username'),'JuanandKimi') || ...
+            strcmp(getenv('username'),'Purkinje')
+        directory = 'C:\Data\Recordings\';
+    else
+        directory = 'B:\data\Recordings\';
+end
 
 cd([directory, 'spike2temp\']);
 
@@ -39,7 +39,7 @@ data_fft = fft(data);
 
 mynewlabels = ones(1,cls).*double(ssclus);
         
-whatttodo = 'normal_mixtures';
+whatttodo = 'fft_sum_pauses';
 switch whatttodo
     case 'fft_max_1hz'
         % Assuming average complex spike firing is at 1 Hz, their number
@@ -85,10 +85,59 @@ switch whatttodo
         data_fft_sum = sum(data_fft_amp); % sum the amplitudes, as a proxy for energy
         
         [muhat,sigmahat] = normfit(data_fft_sum'); % standard deviation
-        cutoff = muhat+3*sigmahat;
+        cutoff = muhat+sigmahat;
         
+        histo = hist(data_fft_sum,100);
+        hist(data_fft_sum,100);
+        hold on;
+        plot([cutoff cutoff],[0 max(histo)],'r--','LineWidth',5);
+        xlabel('Energy below 4 kHz');
         mynewlabels(data_fft_sum >= cutoff) = ssclus+30;
-    
+        
+    case 'fft_sum_pauses'
+        
+        data_fft_amp = abs(data_fft(1:(floor(rws/2)+1),:)); %get fft amplitudes for positive frequencies
+        
+        freqs = linspace(0,Fsamp/2,(floor(rws/2)+1));% get x axis of frequencies
+        llim = find(freqs > 0); llim = llim(1); % find first nonzero freq
+        rlim = find(freqs < 4000); rlim = rlim(end); % find last freq under 4000
+        
+        data_fft_amp = data_fft_amp(llim:rlim,:); % isolate those amplitudes: each column is a spike, each row is a frequency
+        
+        data_fft_sum = sum(data_fft_amp); % sum the amplitudes, as a proxy for energy
+        
+        [muhat,sigmahat] = normfit(data_fft_sum'); % standard deviation
+        cutoff = muhat+sigmahat;
+        
+        pauses = [diff(datastr.times); 0];
+        [muhat,sigmahat] = normfit(pauses');
+        pauses_cutoff = 0.01; % in ms
+        
+        figure();
+        hold on;
+        scatter(pauses,data_fft_sum,'bo');
+        xlabel('pauses');
+        ylabel('Energy below 4 kHz');
+        mask = pauses' >= pauses_cutoff & data_fft_sum >= cutoff;
+        
+        mynewlabels(mask) = ssclus+30;
+        hold on;
+        scatter(pauses,data_fft_sum,'bo');
+        scatter(pauses(mynewlabels == 31),data_fft_sum(mynewlabels == 31),'r+');
+        
+        figure();
+        histo = hist(data_fft_sum,100);
+        hist(data_fft_sum,100);
+        hold on;
+        plot([cutoff cutoff],[0 max(histo)],'r--','LineWidth',5);
+        xlabel('Energy below 4 kHz');
+        figure;
+        histo = hist(pauses,100);
+        hist(pauses,100);
+        hold on;
+        plot([pauses_cutoff pauses_cutoff],[0 max(histo)],'r--','LineWidth',5);
+        xlabel('Pause to next spike');
+        
     case 'fft_pauses'
         
         pauses = diff(datastr.times)'; % how much time after each spike until the next?
@@ -144,7 +193,7 @@ switch whatttodo
          energies = sum(data.^2)./tsamp; energies = energies';
         energies = energies./max(energies);
         [muhat,sigmahat] = normfit(energies');
-        energy_cutoff = 0.08;
+        energy_cutoff = muhat+sigmahat;
         % Calculate the percent of the energy in low frequencies as opposed
         % to high. Problem: define low frequency. 1 feature
         
@@ -152,23 +201,14 @@ switch whatttodo
          pauses = diff(datastr.times); pauses = [pauses; 0];
         pauses = pauses./max(pauses);
         [muhat,sigmahat] = normfit(pauses');
-        pauses_cutoff = 0.02;
+        pauses_cutoff = muhat+sigmahat;
         
         hold on;
         scatter(pauses,energies,'bo');
+        xlabel('pauses');
+        ylabel('energies');
         mask = pauses >= pauses_cutoff & energies >= energy_cutoff;
         mynewlabels(mask) = ssclus+30;
-%        scatter(pauses(mask),energies(mask),'r+');
-        
-%        C = [];
-%         M = [pauses, energies]';
-%         W = SimGraph_NearestNeighbors(M, 5,2,1);
-%         W = SimGraph_Epsilon(M, 0.1);
-%         C = SpectralClustering(W,2,1);
-%         C = full(C);
-%         C = C(:,1)+C(:,2).*2;
-%        mynewlabels = C;
-        
         hold on;
         scatter(pauses,energies,'bo');
         scatter(pauses(mynewlabels == 31),energies(mynewlabels == 31),'r+');
@@ -185,12 +225,18 @@ switch whatttodo
         data_fft_maxes = max(data_fft_amp);
         
         [muhat,sigmahat] = normfit(data_fft_maxes');
-        cutoff = muhat+4*sigmahat;
+        cutoff = muhat+2*sigmahat;
         
         mynewlabels(data_fft_maxes >= cutoff) = ssclus+30;
+        
+        histo = hist(data_fft_maxes,100);
+        hist(data_fft_maxes,100);
+        hold on;
+        plot([cutoff cutoff],[0 max(histo)],'r--','LineWidth',5);
+        xlabel('Maximum power below 4 kHz');
         
 end
 
 % Display pause diagram
-figure(3);
+figure();
 pausediagram(datastr.times, mynewlabels);

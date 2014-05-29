@@ -24,7 +24,7 @@ var low% := 300;
 var high% := 9000;
 
     DlgCreate("Filtering");  'Start new dialog 
-    DlgChan(1,"Signal:",1);
+    DlgChan(1,"Signal:",513);
     DlgInteger(2,"High Pass (Hz):",0,3000);
     DlgInteger(3,"Low Pass (Hz):",3000,20000);
     DlgButton(0,"Cancel");

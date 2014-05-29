@@ -13,13 +13,48 @@ end;
 
 Func PredictPCA%()   'Button 1 routine
 wvmrkch% := WvmrkChoose();
-wcnt% := View(timevw%).countwaves(wvmrkch%); 'count spikes;
-samps% := View(timevw%).getWavemarkInfo(wvmrkch%,1); 'How many samples per spike?
-var data[wcnt%][samps%]; getwaves(wvmrkch%,data[][]);
-var scores[wcnt%][samps%], variances[samps%],components[samps%][samps%];
-ArrConst(scores[][],data[][]);
-PCA(0,scores[][],variances[],components[][]);
-return 0;  'This stops the toolbar
+var ok%;
+
+samps% := MarkInfo(wvmrkch%,pre%);  'how many samples long is the wavemark channel?
+
+
+MatLabOpen(1); 'Open a connection to Matlab
+ok% := MatLabEval("clear; clc;");
+
+View(timevw%);
+MarkMask(wvmrkch%,0,1,-1); ' Show all
+ExportChanList(0, MaxTime(),wvmrkch%);
+FileSaveAs(ssdir$+"spike2temp\\predict.mat",100,1,"",0,"UseSName=1|UseCName=0|WaveTimes=0|BinFreq=0|BinTimes=0|WaveData=2|MarkAs=1|TMarkAs=2|RMarkAs=2|RMarkData=2|WaveMarkAs=2|WaveMarkData=2|Compatability=0");
+
+var temppath$ := FilePath$(0);
+FilePathSet(ssdir$+"spike2temp\\",0);
+' We need to acces the template boundaries
+var ssvw% := SSOpen(-1);
+if (ssvw% = 0) then  ' Is an SS window open?
+    ssvw% := SSOpen(1);        ' If not, open one
+endif;
+View(ssvw%); ' And make it the current view 
+SSChan(wvmrkch%);         ' Set the SS window to the channel of interest
+var tempsize%, start%, show%;
+tempsize% := SSTempSizeGet(start%, show%, pre%);
+FileClose();
+View(timevw%);
+var thisname$ := FileName$(3)+FileName$(4);
+
+ok% := MatLabPut("timelength",View(timevw%).MaxTime());
+ok% := MatLabPut("temp_size",tempsize%);
+ok% := MatLabPut("start_offset",start%);
+ok% := MatLabPut("directory",ssdir$);
+ok% := MatLabPut("fname",thisname$);
+ok% := MatLabPut("tsamp",View(timevw%).Binsize(1));
+MatLabShow(1);
+MatLabEval("PredictPCA;");
+var comps[3];
+ok% := MatLabGet("comps",comps[]);
+MatlabShow(1);
+Message("Highest 3 non-normal components: "+Str$(comps[0])+", "+Str$(comps[1])+", "+Str$(comps[2]));
+MatLabClose();
+return 1;  'This stops the toolbar
 end;
 
 func WvmrkChoose()
@@ -208,7 +243,7 @@ for a% := 0 to codescnt%-1 do
         ChanColourSet(1,2,r,g,b);
         newname$ := "Cluster "+Str$(codes%[a%]);
         WindowTitle$(newname$);
-        FileSaveAs(ssdir$+"figures\\"+thisname$+"_INTH_cl_"+Str$(codes%[a%])+".jpeg",14);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_cl_"+Str$(codes%[a%])+"_INTH.jpeg",14);
     endif;
     
 ;
@@ -346,7 +381,7 @@ for a% := 0 to codescnt%-1 do
         DrawMode(1,13,0,3); 'Set cubic spline
         ChanPenWidth(1,3);
         Optimise(-1);
-        FileSaveAs(ssdir$+"figures\\"+thisname$+"_Wvfrm_cl_"+Str$(a%+1)+".jpeg",14);
+        FileSaveAs(ssdir$+"figures\\"+thisname$+"_cl_"+Str$(codes%[a%])+"_Wvfrm.jpeg",14);
     endif;
     
 ;
@@ -891,4 +926,105 @@ until t = -1;
 end;
 func quit%()
 return 0
+end
+
+func todb%()
+'Sends current sort to database
+var ok%;
+var thisname$ := FileName$(3)+FileName$(4);
+var subj$ := Left$(thisname$,1);
+
+    var subjects$[3],subchoice%;
+    subjects$[0] := "Rigel";
+    subjects$[1] := "Sixx";
+    subjects$[2] := "Hilda";
+
+docase
+case subj$ = "R" then
+    subj$ := subjects$[0];
+case subj$ = "S" then
+    subj$ := subjects$[1];
+case subj$ = "H" then
+    subj$ := subjects$[2];
+else 
+    DlgCreate("Export for REXDataGUI");
+    DlgList(1,"Which subject is this?",subjects$[]);
+    DlgButton(0,"Cancel");
+    DlgButton(1,"Done");
+    ok% := DlgShow(subchoice%);
+    if ok% = 0 then halt; endif;
+    subj$ := subjects$[subchoice%];   
+endcase;
+
+var chamber$ := "UNKNOWN";
+var user$ := "Vincent";
+DlgCreate("Commit sort to Database");
+DlgString(1,"Please indicate chamber:",128, "", 0, 0, "Cerebellum|Thalamus|UNKNOWN");
+DlgString(2, "Please indicate user:",128,"",0,0,"Vincent|Manu|Radu");
+DlgButton(0,"Cancel");
+DlgButton(1,"OK");
+ok% := DlgShow(chamber$,user$);
+
+MatlabOpen(1);
+MatlabEval("clear;clc;");
+MatlabEval("conn = connect2DB();");
+MatlabEval("ftp_conn = ftp('152.3.216.217', 'Radu', 'monkey');");
+
+var today$ := Date$(2,2,3,3,"-");  'Numbers specify formatting which mysql will understand: yyyy-mm-dd HH:MM:SS.FFF
+MatlabEval("newrecord = struct('name','"+thisname$+"','date','"+today$+"', 'chamber', '"+chamber$+"', 'user', '"+user$+"');"); ' package data to make a new recording
+
+MatlabShow(1);
+MatlabEval("[already, success, rec_id] = addRecord(newrecord, conn);");   'add the record if it isn't there. Update chamber if set to UNKNOWN
+
+MatlabEval("[already_sorted, who_by, ids, howmany_sorts, fname] = checkSort(newrecord, conn);"); ' Check if there is a sort
+var alreadySorted%, howmanysorts%;
+ok% := MatlabGet("already_sorted", alreadySorted%);
+
+var newsort% := 0;
+var sel$;
+if alreadySorted% = 1 then                                  'Inquire whether or not you want to overwrite an existing sort or create a new one
+    ok% := MatlabGet("howmany_sorts", howmanysorts%);
+    var ids%[howmanysorts%], indx%;
+    ok% := MatlabGet("ids", ids%[]);
+    MatlabEval("sp2list = existingSortSp2Dlg(who_by, fname)");
+    ok% := MatlabGet("howmany", howmanysorts%);
+    ok% := MatlabGet("sp2list", sel$);
+    'Set the variables above for initial values
+    DlgCreate("Sort already exists");  'Start new dialog
+    DlgList(1,"File already sorted! Overwrite or Create new?", sel$, 3, 0);
+    DlgButton(0,"New Entry");
+    DlgButton(1,"Overwrite");
+    newsort% := DlgShow(indx%);    'ok% is 0 if user cancels,  variables updated if not 
+endif
+
+var thesecomments$ := FileComment$(1)+FileComment$(2)+FileComment$(3)+FileComment$(4)+FileComment$(5);
+    var recid%;
+    MatlabGet("rec_id", recid%);  ' the sort's parent id
+    MatlabEval("newsort = struct('name', '"+thisname$+"', 'comments', '"+thesecomments$+"', 'user', '"+user$+"', 'origin', 'Spike2', 'parent', "+Str$(recid%)+");");
+
+if newsort% = 0 then
+    ok% := MatlabEval("[success, sort_id] = addSort(newsort, conn);");
+else
+    ok% := MatlabEval("[success, sort_id] = updateSort("+Str$(ids%[indx%])+", newsort, conn)");
+    
+    ok% := MatlabEval("[success] = deleteChildren(sort_id, conn, ftp_conn)");
+    
+endif
+
+' Get codes for all clusters
+wvmrkch% := WvmrkChoose();
+var numcodes% := getWavemarkInfo(wvmrkch%, 2);
+var codelist%[numcodes%];
+GetCodes(wvmrkch%,codelist%);
+
+var i%, command$;
+for i% := 0 to numcodes%-1 do
+    command$ := "[success, c_id] = addCluster(sort_id, "+Str$(codelist%[i%])+", conn, ftp_conn);";
+    ok% := MatlabEval(command$);
+    command$ := "[success, psth_id] = addPsth(c_id, conn, ftp_conn)";
+    ok% := MatlabEval(command$);
+next;
+
+MatLabClose();
+return 1
 end
