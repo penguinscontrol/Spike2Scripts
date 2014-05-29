@@ -1,11 +1,11 @@
 
 
 % Variables from Spike2, uncomment for debugging
-%  clear;clc;close all;
-%  ssclus = 1;
-%  timelength = 188.43948;
-%  directory = 'B:\Team Cerebellum\Resorted Files\';
-%  tsamp = 2e-5;
+ clear;clc;close all;
+ ssclus = 1;
+ timelength = 1377.2587563;
+ directory = 'E:\Data\Recordings\Resorted Files\';
+ tsamp = 2e-5;
 
 % if strcmp(getenv('username'),'DangerZone')
 %         directory = 'E:\data\Recordings\';
