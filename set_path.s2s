@@ -22,6 +22,9 @@ if InStr(curpath$,"TMS") then
     ind% := InStr(curpath$,"TMS");   
 endif;
 
+if InStr(curpath$,"Pierre") then
+    ind% := InStr(curpath$,"Pierre");   
+endif;
 if ind% <> 0 then
     ssdir$ := Left$(curpath$,ind%-1);
 else

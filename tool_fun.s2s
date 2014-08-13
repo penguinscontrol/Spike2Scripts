@@ -583,10 +583,11 @@ if ok% = 0 then halt; endif;
 var thisname$ := FileName$(3)+FileName$(4);
 var subj$ := Left$(thisname$,1);
 
-    var subjects$[3],subchoice%;
+    var subjects$[4],subchoice%;
     subjects$[0] := "Rigel";
     subjects$[1] := "Sixx";
     subjects$[2] := "Hilda";
+    subjects$[3] := "Pierre";
 
 docase
 case subj$ = "R" then
@@ -595,6 +596,8 @@ case subj$ = "S" then
     subj$ := subjects$[1];
 case subj$ = "H" then
     subj$ := subjects$[2];
+case subj$ = "P" then
+    subj$ := subjects$[3];
 else 
     DlgCreate("Export for REXDataGUI");
     DlgList(1,"Which subject is this?",subjects$[]);
