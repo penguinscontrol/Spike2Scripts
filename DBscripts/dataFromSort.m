@@ -1,7 +1,7 @@
 function [col_names, this_data] = dataFromSort(conn, newsort )
 %dataFromSort formats column names and data for database insertion
 col_names = {'sort_id', 'processed_mat', 'comments', 'user', 'origin',...            
-        's_file', 't_file', 'recording_fid'};
+        's_file', 't_file', 'recording_id_fk'}; % recording_id_fk was recording_fid
     ssdir = getSsdir(conn);
     subj = whichSubj(newsort.name(1));
     this_data = {[],['processed\' subj '\'  newsort.name '.mat'],...

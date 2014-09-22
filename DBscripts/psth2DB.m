@@ -7,7 +7,7 @@ copyfile([local_file{2} local_file{1}], [local_file{2} server_name]);
 mput(ftp_conn, [local_file{2} server_name]);
 delete([local_file{2} server_name]);
 % update record
-    col_names = {'cluster_fid','image_url','image_caption'};
+    col_names = {'cluster_id_fk','image_url','image_caption'};
     this_data = {c_id, server_name, ' '};
     datainsert(conn,'psth',col_names, this_data);
     commit(conn);

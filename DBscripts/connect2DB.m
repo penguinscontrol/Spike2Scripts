@@ -25,7 +25,7 @@ set(conn, 'AutoCommit', 'off');
 
 %created users and machines tables directly in mysql 
 % 
-% CREATE TABLE machines(user_fid INT NOT NULL AUTO_INCREMENT, m_name CHAR(20) NOT NULL, PRIMARY KEY (user_fid));
+% CREATE TABLE machines(user_fid INT NOT NULL AUTO_INCREMENT, m_name CHAR(20) NOT NULL, PRIMARY KEY (user_id_fk));
 % INSERT INTO machines (m_name) VALUES ('DangerZone'), ('Vincent'), ('SommerVD');
 % CREATE TABLE users(user_id INT NOT NULL AUTO_INCREMENT, name CHAR(20) NOT NULL, PRIMARY KEY (user_id)); 
 % INSERT INTO users (name) VALUES ('Vincent'), ('Vincent'), ('generic');
