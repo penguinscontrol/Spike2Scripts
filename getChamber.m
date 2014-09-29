@@ -11,5 +11,11 @@ if isempty(chamber)
     chamber='UNKNOWN';
 end
 
+if size(chamber,1)>1 %annoying cases with two different recordings in same session
+    %check if same chamber
+    if strcmp(chamber{1},chamber{2})
+        chamber=chamber(1);
+    end
+end
 end
 

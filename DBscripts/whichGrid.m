@@ -1,15 +1,11 @@
-function grid = whichGrid( subj, chamber, conn )
+function grid = whichGrid(init, chamber, conn )
 % whichGrid what is the index of a certain grid in the database?   
-if strcmp(subj, 'S')
-    query = ['SELECT grid_id FROM grid WHERE subject = ''Sixx'' and location = ''' chamber ''''];           
-    grid = fetch(conn,query);
-elseif strcmp(subj, 'R')
-    query = ['SELECT grid_id FROM grid WHERE subject = ''Rigel'' and location = ''' chamber ''''];           
-    grid = fetch(conn,query);    
-elseif strcmp(subj, 'H')
-    query = ['SELECT grid_id FROM grid WHERE subject = ''Hilda'' and location = ''' chamber ''''];           
-    grid = fetch(conn,query);   
-end
 
+subj = whichSubj(init);
+query = ['SELECT grid_id FROM grid WHERE subject = ''' subj ''' and location = ''' chamber ''''];           
+grid = fetch(conn,query);
+if isempty(grid) %unreferenced grid
+    grid ={8};
+end
 end
 

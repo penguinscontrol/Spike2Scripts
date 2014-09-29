@@ -1,11 +1,12 @@
-function [ success, psth_id ] = addPsth( c_id, conn, ftp_conn )
+function [ success, psth_id ] = addPsth(c_id, clusnum, conn) % removed ftp_conn
 %addPsth Scan local figures folder and add any psth's that correspond to
 %the cluster indicated by c_id to the database
+global directory
 
 try
     psth_id = [];
-    ssdir = getSsdir(conn);
-    figdir = [ssdir 'figures\'];
+%     ssdir = getSsdir(conn);
+    figdir = [directory 'figures\'];
     sacdir = [figdir 'sac\'];
     visdir = [figdir 'vis\'];
     rewdir = [figdir 'rew\'];
@@ -36,7 +37,7 @@ try
         end
         
         for c = 1:length(listPsth) % add the psth's
-            [t_psth_id, success] = psth2DB(conn,ftp_conn, c_id, listPsth(c,:));
+            [t_psth_id, success] = psth2DB(conn, c_id, clusnum, listPsth(c,:)); %ftp_conn
             psth_id = [psth_id t_psth_id];
         end
     end

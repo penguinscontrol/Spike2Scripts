@@ -13,48 +13,59 @@ try
     % format to wfrm and jpeg name
     wvfrm_name = [name_results{1}(1:end-1) '_cl_' num2str(c_name) '_Wvfrm.jpeg'];
     isi_name = [name_results{1}(1:end-1) '_cl_' num2str(c_name) '_INTH.jpeg'];
-    path = [directory, 'figures\'];
+    figdir = [directory, 'figures\'];
     
     col_names = {'average_wvfrm', 'isi', 'phenotype', 'name', 'sort_id_fk'}; %sort_id_fk was sort_fid
     first_data = {' ', ' ', ' ', c_name, s_id}; % add as much as we can, don't know c_id yet
-    
+        %if it's REX, 99.9% there wil be only channel
+%         c_origin=fetch(conn,['SELECT s.origin FROM sorts s WHERE s.sort_id = ' num2str(s_id)]);
+%         if strcmp('Rex',c_origin{:})
+%             first_data{1}= fetch(conn,['SELECT cluster_id FROM sorts s INNER JOIN clusters c WHERE s.sort_id = ' num2str(s_id)]);
+%         end
+        
     datainsert(conn,'clusters',col_names, first_data);
     commit(conn);
     query = 'SELECT LAST_INSERT_ID()';
     results = fetch(conn, query);
     c_id = results{1};
     
-    wvfrm_ftp_name = '';
+    %wvfrm_ftp_name = '';
     isi_ftp_name = '';
     %     cd(ftp_con, '/myapp/figures');
     
     % Upload waveform jpeg
     try
-        wvfrm_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id)  '_Wvfrm.jpeg'];
-        copyfile([path wvfrm_name], [path wvfrm_ftp_name]);
-        %mput(ftp_con, [path wvfrm_ftp_name]);
-        system(['C:\cygwin64\bin\bash --login -c -l "cd ',path,'; cp ',wvfrm_ftp_name,' ',servrep,'/',mapddataf,'/figures/"']);
-        delete([path wvfrm_ftp_name]);
+        %chek if file exists
+        if  exist([figdir wvfrm_name], 'file') == 2 
+        %wvfrm_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id)  '_Wvfrm.jpeg'];
+        %copyfile([figdir wvfrm_name], [figdir wvfrm_ftp_name]);
+        %mput(ftp_con, [figdir wvfrm_ftp_name]);
+        system(['C:\cygwin64\bin\bash --login -c -l "cd ', regexprep(figdir,'\','/'),'; cp ',wvfrm_name,' ',servrep,'/',mapddataf,'/figures/"']);
+        %delete([figdir wvfrm_ftp_name]);
         % update record
         col_names = {'average_wvfrm'};
-        second_data = {wvfrm_ftp_name};
+        second_data = {wvfrm_name};
         update(conn,'clusters',col_names,second_data,['WHERE cluster_id = ' num2str(c_id) ';']);
         commit(conn);
+        end
     catch
     end
     
     % Upload isi jpeg
     try
-        isi_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id) '_INTH.jpeg'];
-        copyfile([path isi_name], [path isi_ftp_name]);
-        %         mput(ftp_con, [path isi_ftp_name]);
-        system(['C:\cygwin64\bin\bash --login -c -l "cd ',path,'; cp ',isi_ftp_name,' ',servrep,'/',mapddataf,'/figures/"']);
-        delete([path isi_ftp_name]);
+        %chek if file exists
+        if  exist([figdir isi_name], 'file') == 2 
+%         isi_ftp_name = [name_results{1}(1:end-1) '_cl_' num2str(c_id) '_INTH.jpeg'];
+%         copyfile([figdir isi_name], [figdir isi_ftp_name]);
+        %         mput(ftp_con, [figdir isi_ftp_name]);
+        system(['C:\cygwin64\bin\bash --login -c -l "cd ', regexprep(figdir,'\','/'),'; cp ',isi_name,' ',servrep,'/',mapddataf,'/figures/"']);
+%         delete([figdir isi_ftp_name]);
         % update record
         col_names = {'isi'};
-        second_data = {isi_ftp_name};
+        second_data = {isi_name};
         update(conn,'clusters',col_names,second_data,['WHERE cluster_id = ' num2str(c_id) ';']);
         commit(conn);
+        end
     catch
     end
     

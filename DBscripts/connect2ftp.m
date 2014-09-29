@@ -16,7 +16,7 @@ ftp_conn = ftp('152.3.33.41',user,pwd);
 % creating a directory 
 % system('C:\cygwin64\bin\bash --login -c -l "cd //ccn-sommerserv.win.duke.edu/*/vincedata; mkdir test"')
 % copying a file from computer to server
-% system('C:\cygwin64\bin\bash --login -c -l "cd E:\Data; cp testcopy.txt //ccn-sommerserv.win.duke.edu/Data/vincedata/test/"');
+% system('C:\cygwin64\bin\bash --login -c -l "cd E:/Data; cp testcopy.txt //ccn-sommerserv.win.duke.edu/Data/vincedata/test/"');
 % and delete file
 % system('C:\cygwin64\bin\bash --login -c -l "cd //ccn-sommerserv.win.duke.edu/Data/vincedata/test/; rm testcopy.txt"');
 

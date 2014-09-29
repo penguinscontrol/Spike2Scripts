@@ -1,5 +1,5 @@
 function subj = whichSubj(init)
-% whichGrid what is the index of a certain grid in the database?   
+% whichSubj: which subject given the initial
 if strcmp(init, 'S')
     subj = 'Sixx';
 elseif strcmp(init, 'R')
