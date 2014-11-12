@@ -15,7 +15,7 @@ if isempty(results)
 else
     who = results(:,2);
     fname = results(:,3);
-    ids = cast(cell2mat(results(:,1)),'int8');
+    ids = cast(cell2mat(results(:,1)),'int32');
 end
 end
 
