@@ -1,0 +1,105 @@
+'HRaster
+'Script to demonstrate the use of XY view to generate a horizontal
+'raster display, suitable for inclusion above a PSTH
+'Generated dialog script
+'Declare variables:
+var ok%, tChan%, rChan%, pre:=0.1, post:=0.4, binW:=0.01;
+var tv%,rv%,pv%;
+'Set the variables above for initial values
+if ViewKind() then	'Not a time view
+	tv% := FileOpen("",0,1,"File to analyse");
+else
+	tv% := View();
+endif;
+
+if (tv% <= 0) then message("We need a file to operate on"); halt endif;
+
+repeat
+   DlgCreate("Horizontal raster settings");  'Start new dialog
+   DlgChan(1,"Trigger channel"	 ,126	 );
+   DlgChan(2,"Response channel"  ,126  );
+   DlgReal(3,"Pre trigger time"  ,0.000000,10.000000  );
+   DlgReal(4,"Post trigger time"	,0.000000,10.000000	);
+	Dlgreal(5,"PSTH bin width",  0.00001, 10.0);
+   ok% := DlgShow(	tChan%, rChan%, pre, post, binW);    'ok is 0 if user cancels
+   if ok% then
+  		if (pre+post <= 0) then
+	   	ok%:=0;
+		 	Message("One of Pre or Post must be non-zero");
+		else
+			if tChan% = 0 then
+		 		Message("No trigger channel");
+				ok% := 0;
+			else
+				if (rChan% = 0) then
+					Message("No response channel");
+					ok% := 0;
+				endif;
+			endif;
+		endif;
+   endif;
+until ok%;
+
+ToolbarText("");				'reserve space for toolbar
+Window(0,0,100,100);
+ChanShow(tChan%, rChan%);	'Make sure the channels are visible
+CursorSet(2);					'Show two cursors
+Interact("Select an area to analyse with the cursors",0);
+CursorRenumber();				'get cursors in order
+var sTime,eTime;
+sTime := Cursor(1);eTime := Cursor(2);
+rv% := HRaster%(tChan%, rChan%, pre, post, sTime, eTime);
+if (rv%>0) then
+	View(rv%).Window(0,0,100,50);
+	View(tv%);					'Back to the time window
+	pv% := SetPsth(rChan%, (pre+post)/binW, binW, pre, tChan%);
+	if (pv%>0) then
+   	Window(0,50,100,100);
+		Process(sTime, eTime, 1, 1);
+		WindowVisible(1);
+	endif;
+endif;
+
+halt;
+
+Proc AddRastSweep(tV%, rCh%, y, sTime, eTime, tTime)
+var n%, i%;
+n% := View(tV%).Count(rCh%, sTime, eTime); 'see how many to add
+if n%>0 then
+	var times[n%];
+	View(tV%).ChanData(rCh%, times[], sTime, eTime); 'get data
+	ArrSub(times[], tTime);
+	for i% := 0 to n%-1 do
+		XYAddData(1, times[i%], y);
+		next;
+endif;
+end;
+
+'return
+'-1    Not a time view
+'-2    Channels not the right type
+'+ve   The view handle of the XY window
+func HRaster%(tCh%, rCh%, pre, post, sTime, eTime)
+var tV%, xV%;		'time view and xy view
+tV% := View();		'get original time view
+if ViewKind()<> 0 then return -1 endif;
+if (ChanKind(tCh%)< 2) or (ChanKind(rCh%) < 2) then return -2 endif;
+xV% := FileNew(12); 'make a new XY view
+WindowVisible(1);
+YAxis(1);         'show the y axis to match result view
+var nt%, sw%;
+nt% := View(tV%).Count(tCh%, sTime+pre, eTime-post); 'number of sweeps
+if nt% > 0 then
+   XYDrawMode(1,1,8);
+	YRange(1, 0, nt%+1); 'set channels at unit spacing
+	var trig[nt%], t; 'space for triggers
+	View(tV%).ChanData(tCh%, trig[], sTime+pre, eTime-post); 'get data
+	for sw%:=1 to nt% do
+	   t := trig[sw%-1];
+	   AddRastSweep(tV%, rCh%, sw%, t-pre, t+post, t);
+		next;
+	Draw(-pre,pre+post);
+endif;
+return xV%;
+end;
+

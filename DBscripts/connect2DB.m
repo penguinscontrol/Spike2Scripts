@@ -1,55 +1,70 @@
-function conn=connect2DB(dbname) 
-% modified VP 8/8/2014
-
+function conn=connect2DB(dbname)
 %connect2DB opens a connection to the database and returns its handle
+% modified VP 8/8/2014
+% added connection to local db VP 11/25/2015
 
-[~,slash,~,dbdir]=SetUserDir;
-conn = database(dbname,'vp35',fscanf(fopen([dbdir,slash,'dbpd.txt']),'%c'),...
+userinfo=SetUserDir;
+% connect to remote database
+conn = database(dbname,'vp35',fscanf(fopen([userinfo.dbldir,userinfo.slash,'dbpd.txt']),'%c'),...
+    'Vendor','MySQL',...
+    'Server','ccn-sommerserv.win.duke.edu');
+if conn.Handle==0
+    %test local
+    disp('remote database not available')
+    disp('connecting to local database')
+    conn = database(dbname,'vp35',fscanf(fopen([userinfo.dbldir,userinfo.slash,'dbpd.txt']),'%c'),...
         'Vendor','MySQL',...
-        'Server','ccn-sommerserv.win.duke.edu');
+        'Server','localhost'); %127.0.0.1 i.e., localhost
+end
+
+if conn.Handle==0
+    disp('connection failed')
+end
+
+%% other cases and exemples
 %       'URL','jdbc:mysql://ccn-sommerserv.win.duke.edu');
 %       default port number is 3306, no need to specify it
 %       'PortNumber',3306
 
-set(conn, 'AutoCommit', 'off');
+%set(conn, 'AutoCommit', 'off');
 
-% 
+%
 %       %example of database interaction using exec
 %       %ex. 1
 %       selectDBdata =exec(conn,'select * from vp_sldata');
 %       % ex. 2
 %       %Use the SQL CREATE command to create the "subject" table, with fields names.
 %       sqlquery = ['CREATE TABLE subject(name VARCHAR(20),'...
-%           'trainer VARCHAR(20), sex CHAR(1), YOB DATE, YOD DATE)'];  
+%           'trainer VARCHAR(20), sex CHAR(1), YOB DATE, YOD DATE)'];
 
 
-%created users and machines tables directly in mysql 
-% 
+%created users and machines tables directly in mysql
+%
 % CREATE TABLE machines(user_fid INT NOT NULL AUTO_INCREMENT, m_name CHAR(20) NOT NULL, PRIMARY KEY (user_id_fk));
 % INSERT INTO machines (m_name) VALUES ('DangerZone'), ('Vincent'), ('SommerVD');
-% CREATE TABLE users(user_id INT NOT NULL AUTO_INCREMENT, name CHAR(20) NOT NULL, PRIMARY KEY (user_id)); 
+% CREATE TABLE users(user_id INT NOT NULL AUTO_INCREMENT, name CHAR(20) NOT NULL, PRIMARY KEY (user_id));
 % INSERT INTO users (name) VALUES ('Vincent'), ('Vincent'), ('generic');
 
 
 %       %Create the table for the database connection object conn.
 %       exec(conn,sqlquery); %or e=exec(conn,sqlquery); to get a return handle. Don't forget to close the cursor: close(e);
 %       %Use the SQL ALTER command to add a new column to the table.
-%       sqlquery = 'ALTER TABLE Subject ADD YOB int'; 
+%       sqlquery = 'ALTER TABLE Subject ADD YOB int';
 %       curs = exec(conn,sqlquery);
 %       %After you are finished with the cursor object, close the cursor.
 %       close(curs);
 %       %delete table using DROP
 %       curs = exec(conn, 'DROP TABLE subject_test');
 %       close(curs);
-%       
+%
 %       % see http://www.mathworks.com/help/database/ug/exec.html
 %       % and http://www.mathworks.com/help/database/ug/exporting-data-using-the-bulk-insert-command.html#bsl2k0j-4
-%       
+%
 %       %insert data with fastinsert
 %       tablename = 'subject';
 %       colnames = {'name','YOB'};
 %       sbjdata = {'Hilda',1998};
-%       
+%
 %       fastinsert(conn,tablename,colnames,sbjdata);
 
 %Radu's parameters
@@ -59,9 +74,9 @@ set(conn, 'AutoCommit', 'off');
 
 
 % example of connection to Microsoft Access database with .accdb format
-% dbpath = ['C:\Data\Matlab\MyDatabase.accdb']; 
+% dbpath = ['C:\Data\Matlab\MyDatabase.accdb'];
 % url = [['jdbc:odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};DSN='';DBQ='] dbpath];
-% con = database('','','','sun.jdbc.odbc.JdbcOdbcDriver', url); 
+% con = database('','','','sun.jdbc.odbc.JdbcOdbcDriver', url);
 
 end
 
