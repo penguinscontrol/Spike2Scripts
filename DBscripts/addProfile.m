@@ -11,7 +11,9 @@ prof=profiles{dataitem}; %varchar
 proft=profiletypes(dataitem); %smallint
 
 update(conn,'clusters',col_names,{prof,proft},['WHERE cluster_id = ' num2str(ci) ';']);
-commit(conn)
+if ~strcmp(get(conn,'AutoCommit'),'on')
+    commit(conn)
+end
 
 end
     success = true;
